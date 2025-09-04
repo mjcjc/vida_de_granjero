@@ -21,6 +21,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     _In_ LPWSTR    lpCmdLine,
     _In_ int       nCmdShow)
 {
+   
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
@@ -29,14 +30,16 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_LABPROJECTPARTICE, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
 
+    MyRegisterClass(hInstance);
+  
     // 애플리케이션 초기화를 수행합니다:
     if (!InitInstance(hInstance, nCmdShow))
     {
+        MessageBox(nullptr, L"InitInstance 실패", L"Error", MB_OK); // ← 여기
         return FALSE;
     }
-
+    MessageBox(nullptr, L"InitInstance 성공", L"Debug", MB_OK); // ← 여기
     HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_LABPROJECTPARTICE));
 
     MSG msg;
@@ -112,7 +115,11 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     HWND hMainWnd = CreateWindow(szWindowClass, szTitle, dwStyle, CW_USEDEFAULT,
         CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, NULL, NULL, hInstance, NULL);
 
-    if (!hMainWnd) return(FALSE);
+    if (!hMainWnd)
+    {
+        MessageBox(nullptr, L"CreateWindow 실패", L"Error", MB_OK);
+        return(FALSE);
+    }
 
     gGameFramework.OnCreate(hInstance, hMainWnd);
 

@@ -8,7 +8,22 @@
 #define DIR_DOWN 0x20
 #include "GameObject.h"
 #include "Camera.h"
+#include <ClientNetwork.h>
 
+struct Player_Inventory
+{
+	int Rock = 0;
+	int wood = 0;
+	int coonSeed = 0;
+	int potatoSeed = 0;
+	int pumpkinSeed = 0;
+	int tomatoSeed = 0;
+};
+
+struct CB_PLAYER_INFO
+{
+	XMFLOAT4X4					m_xmf4x4World;
+};
 
 class CPlayer : public CGameObject
 {
@@ -23,7 +38,9 @@ protected:
 	float 	m_fYaw;
 	float 	m_fRoll;
 
+	XMFLOAT3 m_xmf3PreviousPosition;
 
+	XMFLOAT3					m_xmf3Scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
 
 	//플레이어의 이동 속도를 나타내는 벡터이다.
 	XMFLOAT3 		m_xmf3Velocity;
@@ -42,11 +59,17 @@ protected:
 	LPVOID 		 m_pCameraUpdatedContext;
 	//플레이어에 현재 설정된 카메라이다.
 	CCamera* m_pCamera = NULL;
+
+	RECT m_MoveBounds; //움직임 반경 제어
+
 public:
 	CPlayer();
 	virtual ~CPlayer();
 
+
+
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
+	XMFLOAT3 GetPreviousPosition() { return(m_xmf3PreviousPosition); }
 	XMFLOAT3 GetLookVector() { return(m_xmf3Look); }
 	XMFLOAT3 GetUpVector() { return(m_xmf3Up); }
 	XMFLOAT3 GetRightVector() { return(m_xmf3Right); }
@@ -62,6 +85,27 @@ public:
 			m_xmf3Position.x, xmf3Position.y - m_xmf3Position.y, xmf3Position.z - m_xmf3Position.z),
 			false);
 	}
+
+	void SetPreviousPosition(XMFLOAT3& xmf3Position)
+	{
+		m_xmf3PreviousPosition = xmf3Position;
+	}
+
+	virtual void AddForce(XMFLOAT3 force);
+
+	XMFLOAT3 m_xmf3InputDir = XMFLOAT3(0, 0, 0);
+	float m_fCurrentSpeed = 0.0f;
+	float m_fMaxSpeed = 6.0f;       // 최고 속도
+	float m_fAccel = 5.0f;          // 가속 계수 (초당 4배 Lerp)
+	float m_fDecel = 10.0f;          // 감속 계수
+	float m_fgravity = -9.8f;
+
+	float m_fVerticalVelocity = 0.0f;
+	bool  m_bOnGround = false;
+	bool	 m_bOnBuilding = false;
+
+	void SetScale(XMFLOAT3& xmf3Scale) { m_xmf3Scale = xmf3Scale; }
+
 	XMFLOAT3& GetVelocity() { return(m_xmf3Velocity); }
 	float GetYaw() { return(m_fYaw); }
 	float GetPitch() { return(m_fPitch); }
@@ -71,13 +115,13 @@ public:
 	//플레이어를 이동하는 함수이다.
 	void Move(ULONG nDirection, float fDistance, bool bVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
-	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f);
+	void Move(float fxOffset = 0.0f, float fyOffset = 0.0f, float fzOffset = 0.0f) {};
 	//플레이어를 회전하는 함수이다.
 	void Rotate(float x, float y, float z);
 	//플레이어의 위치와 회전 정보를 경과 시간에 따라 갱신하는 함수이다.
 	void Update(float fTimeElapsed);
 	//플레이어의 위치가 바뀔 때마다 호출되는 함수와 그 함수에서 사용하는 정보를 설정하는 함수이다.
-	virtual void OnPlayerUpdateCallback(float fTimeElapsed) { }
+	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	void SetPlayerUpdatedContext(LPVOID pContext) { m_pPlayerUpdatedContext = pContext; }
 	//카메라의 위치가 바뀔 때마다 호출되는 함수와 그 함수에서 사용하는 정보를 설정하는 함수이다.
 	virtual void OnCameraUpdateCallback(float fTimeElapsed) { }
@@ -96,6 +140,36 @@ public:
 	//플레이어의 카메라가 3인칭 카메라일 때 플레이어(메쉬)를 렌더링한다.
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera =
 		NULL);
+	void ShadowRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera =
+		NULL);
+
+	virtual void SetMovementBound(RECT bounds);
+
+	virtual void SetParticleObject(CParticleObject* pParticleObject) {}
+	virtual CParticleObject* GetParticleObject() {
+		return m_pParticleObject;
+	}
+
+	virtual void SetTriggerObject(CGameObject* pObj) { m_pTriggerObject = pObj; }
+	virtual CGameObject* GetTriggerObject() { return m_pTriggerObject; }
+
+	virtual BoundingOrientedBox GetTriggerObbBox() { return m_TriggerobbBox; }
+
+	public: 
+		Player_Inventory m_pPlayerInventory; // 플레이어 인벤토리 정보
+protected:
+	ComPtr<ID3D12Resource> m_pd3dcbPlayer = NULL;
+	CB_PLAYER_INFO* m_pcbMappedPlayer = NULL;
+
+	CGameObject* m_pTriggerObject = NULL; //현재 플레이어가 상호작용 가능한 오브젝트를 의미하고
+	CParticleObject* m_pParticleObject = NULL;
+	BoundingOrientedBox m_TriggerobbBox; //바위를 캐거나 나무를 캐거나, 풀을 캐거나 F 상호작용에서 상호작용하고있는 애를 걸러줄 친구
+public:
+	ClientNetwork* m_upClientNetwork;
+	void setNetworkClient(ClientNetwork* netClient)
+	{
+		m_upClientNetwork = netClient; 
+	}
 };
 
 class CAirplanePlayer : public CPlayer
@@ -106,4 +180,41 @@ public:
 	virtual ~CAirplanePlayer();
 	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
 	virtual void OnPrepareRender();
+};
+
+class CPlayerIdleSetCallbackHandler : public CAnimationCallbackHandler
+{
+private:
+	CAnimationController* m_pController = NULL;
+	CPlayer* m_pPlayer = NULL;
+	CParticleObject* m_pParticleObject = NULL;
+public:
+	CPlayerIdleSetCallbackHandler(CAnimationController* pController) { m_pController = pController; }
+	~CPlayerIdleSetCallbackHandler() { delete m_pController; }
+
+public:
+	virtual void HandleCallback(void* pCallbackData, float fTrackPosition);
+};
+
+class CFarmPlayer : public CPlayer
+{
+
+public:
+	CFarmPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, CLoadedModelInfo* pModel, void* pContext, int nAnimationTracks );
+	virtual ~CFarmPlayer();
+	virtual CCamera* ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
+	virtual void OnPrepareRender();
+	virtual void SetOBB(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
+
+	virtual void AddForce(XMFLOAT3 force);
+	virtual void Jump();
+
+	virtual void SetMovementBound(RECT bounds); //라운드에서 움직일 수 있는 반경을 선택하는 함수
+	
+	virtual void SetParticleObject(CParticleObject* pParticleObject);
+
+	virtual void UpdateTransform(XMFLOAT4X4* pxmf4x4Parent = NULL);
+
+
 };

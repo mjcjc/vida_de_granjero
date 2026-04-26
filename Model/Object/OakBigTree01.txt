@@ -1,0 +1,173 @@
+<Hierarchy>:
+	<Frame>: 0 6 OakBigTree01
+		<Transform>: 0 0 0 0 0 0 1 1 1 0 0 0 1  
+		<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1  
+		<Children>: 6
+			<Frame>: 1 0 Billboard
+				<Transform>: -0.9745941 18.77711 1.763984 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 -0.9745941 18.77711 1.763984 1  
+				<Mesh>: 8 Billboard
+					<Bounds>: -0.6161137 0 -0.9133673 18.14689 18.94404 18.1469
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 1
+						<SubMesh>: 0 0  
+				</Mesh>
+				<Materials>: 1
+					<Material>: 0
+						<AlbedoMap>: BigOakBillboard01
+						<NormalMap>: null
+						<MetalnessMap>: null
+						<OcclusionMap>: null
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+			<Frame>: 2 0 Collider
+				<Transform>: -1.565271 14.34344 2.211366 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 -1.565271 14.34344 2.211366 1  
+				<Mesh>: 144 Collider
+					<Bounds>: 0.4481657 -7.932108 -2.294993 5.005522 6.611119 5.219594
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 1
+						<SubMesh>: 0 0  
+				</Mesh>
+				<Materials>: 1
+					<Material>: 0
+						<AlbedoMap>: barkOak001
+						<NormalMap>: barkOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: barkOak001_AO
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+			<Frame>: 3 0 HQ_OakTree01_LOD0
+				<Transform>: 0 -0.1997901 0 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 0 -0.1997901 0 1  
+				<Mesh>: 42644 HQ_OakTree01_LOD0
+					<Bounds>: -1.314446 18.885 1.130928 17.87281 18.885 18.16802
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 2
+						<SubMesh>: 0 0  
+						<SubMesh>: 1 0  
+				</Mesh>
+				<Materials>: 2
+					<Material>: 0
+						<AlbedoMap>: @barkOak001
+						<NormalMap>: @barkOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: @barkOak001_AO
+					</Material>
+					<Material>: 1
+						<AlbedoMap>: BranchesOak001
+						<NormalMap>: BranchesOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: null
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+			<Frame>: 4 0 HQ_OakTree01_LOD1
+				<Transform>: 0 -0.1997901 0 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 0 -0.1997901 0 1  
+				<Mesh>: 38550 HQ_OakTree01_LOD1
+					<Bounds>: -1.314446 18.885 1.130928 17.87281 18.885 18.16802
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 2
+						<SubMesh>: 0 0  
+						<SubMesh>: 1 0  
+				</Mesh>
+				<Materials>: 2
+					<Material>: 0
+						<AlbedoMap>: @barkOak001
+						<NormalMap>: @barkOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: @barkOak001_AO
+					</Material>
+					<Material>: 1
+						<AlbedoMap>: @BranchesOak001
+						<NormalMap>: @BranchesOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: null
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+			<Frame>: 5 0 HQ_OakTree01_LOD2
+				<Transform>: 0 -0.1997901 0 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 0 -0.1997901 0 1  
+				<Mesh>: 32370 HQ_OakTree01_LOD2
+					<Bounds>: -1.314446 18.76761 1.130928 17.87281 18.76761 18.16802
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 2
+						<SubMesh>: 0 0  
+						<SubMesh>: 1 0  
+				</Mesh>
+				<Materials>: 2
+					<Material>: 0
+						<AlbedoMap>: @barkOak001
+						<NormalMap>: @barkOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: @barkOak001_AO
+					</Material>
+					<Material>: 1
+						<AlbedoMap>: @BranchesOak001
+						<NormalMap>: @BranchesOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: null
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+			<Frame>: 6 0 HQ_OakTree01_LOD3
+				<Transform>: 0 -0.1997901 0 0 0 0 1 1 1 0 0 0 1  
+				<TransformMatrix>: 1 0 0 0 0 1 0 0 0 0 1 0 0 -0.1997901 0 1  
+				<Mesh>: 20886 HQ_OakTree01_LOD3
+					<Bounds>: -1.274696 18.76459 1.148508 17.81867 18.76459 18.13626
+					<Positions>: 0  
+					<Colors>: 0  
+					<TextureCoords0>: 0  
+					<TextureCoords1>: 0  
+					<Normals>: 0  
+					<SubMeshes>: 2
+						<SubMesh>: 0 0  
+						<SubMesh>: 1 0  
+				</Mesh>
+				<Materials>: 2
+					<Material>: 0
+						<AlbedoMap>: @barkOak001
+						<NormalMap>: @barkOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: @barkOak001_AO
+					</Material>
+					<Material>: 1
+						<AlbedoMap>: @BranchesOak001
+						<NormalMap>: @BranchesOak001_N
+						<MetalnessMap>: null
+						<OcclusionMap>: null
+					</Material>
+				</Materials>
+				<Children>: 0
+			</Frame>
+	</Frame>
+</Hierarchy>

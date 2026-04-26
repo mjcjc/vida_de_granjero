@@ -1,0 +1,35 @@
+syntax = "proto3";
+package Protocol;
+
+import "Enum.proto";
+
+
+message Transform
+{
+
+    float qx = 1;
+    float qy = 2;
+    float qz = 3;
+    float qw = 4;
+
+    // Position
+    float px = 5;
+    float py = 6;
+    float pz = 7;
+}
+
+message Player
+{
+	uint64 id = 1;
+    PlayerType playerType = 2;
+    PlayerState State = 3;
+    Transform transform = 4;
+	// Ω∫≈» ¡§∫∏...
+}
+
+message WorldObject
+{
+    uint64 temp_id = 1;
+    uint32 model_type = 2;
+    Transform transform = 3;
+}

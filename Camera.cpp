@@ -3,10 +3,47 @@
 #include "Camera.h"
 
 
+void CCamera::GenerateFrustum()
+{
+	m_BoundingFrustumCamera.CreateFromMatrix(m_BoundingFrustumCamera, XMLoadFloat4x4(&m_xmf4x4Proj));
+	//뷰프로스텀 월드 기준으로 초기화
+	XMMATRIX invView = XMMatrixInverse(nullptr, XMLoadFloat4x4(&m_xmf4x4View));
+	m_BoundingFrustumCamera.Transform(m_BoundingFrustumCamera, invView);
+}
+
 CCamera::CCamera()
 {
 	m_xmf4x4View = Matrix4x4::Identity();
 	m_xmf4x4Proj = Matrix4x4::Identity();
+	m_xmf4x4InvProj = Matrix4x4::Identity();
+	m_xmf4x4LightViews = new XMFLOAT4X4[5];
+	m_xmf4x4LightProjs = new XMFLOAT4X4[5];
+	m_xmf4x4LightInvProj = new XMFLOAT4X4[5];
+	m_xmf3LightPosition = new XMFLOAT3[5];
+	m_d3dShadowMapViewport = new D3D12_VIEWPORT[5];
+	m_d3dShadowScissorRect = new D3D12_RECT[5];
+	for (int i = 0; i < 5; i++)
+	{
+		m_xmf4x4LightViews[i] = Matrix4x4::Identity();
+		m_xmf4x4LightProjs[i] = Matrix4x4::Identity();
+		m_xmf4x4LightInvProj[i] = Matrix4x4::Identity();
+		m_xmf3LightPosition[i] = XMFLOAT3(0,0,0);
+		switch (i)
+		{
+		case 0:
+			{
+				m_d3dShadowMapViewport[i] = { 0, 0, _DEPTH_BUFFER_WIDTH , _DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f };
+				m_d3dShadowScissorRect[i] = { 0, 0, _DEPTH_BUFFER_WIDTH , _DEPTH_BUFFER_HEIGHT };
+				break;
+			}
+		default:
+			{
+				m_d3dShadowMapViewport[i] = { 0, 0, _SPOT_DEPTH_BUFFER_WIDTH , _SPOT_DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f };
+				m_d3dShadowScissorRect[i] = { 0, 0, _SPOT_DEPTH_BUFFER_WIDTH , _SPOT_DEPTH_BUFFER_HEIGHT };
+				break;
+			}
+		}
+	}
 	m_d3dViewport = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT, 0.0f, 1.0f };
 	m_d3dScissorRect = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT };
 	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -35,6 +72,35 @@ CCamera::CCamera(CCamera* pCamera)
 		//카메라가 없으면 기본 정보를 설정한다. 
 		m_xmf4x4View = Matrix4x4::Identity();
 		m_xmf4x4Proj = Matrix4x4::Identity();
+		m_xmf4x4InvProj = Matrix4x4::Identity();
+		m_xmf4x4LightViews = new XMFLOAT4X4[5];
+		m_xmf4x4LightProjs = new XMFLOAT4X4[5];
+		m_xmf4x4LightInvProj = new XMFLOAT4X4[5];
+		m_xmf3LightPosition = new XMFLOAT3[5];
+		m_d3dShadowMapViewport = new D3D12_VIEWPORT[5];
+		m_d3dShadowScissorRect = new D3D12_RECT[5];
+		for (int i = 0; i < 5; i++)
+		{
+			m_xmf4x4LightViews[i] = Matrix4x4::Identity();
+			m_xmf4x4LightProjs[i] = Matrix4x4::Identity();
+			m_xmf4x4LightInvProj[i] = Matrix4x4::Identity();
+			m_xmf3LightPosition[i] = XMFLOAT3(0, 0, 0);
+			switch (i)
+			{
+			case 0:
+			{
+				m_d3dShadowMapViewport[i] = { 0, 0, _DEPTH_BUFFER_WIDTH , _DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f };
+				m_d3dShadowScissorRect[i] = { 0, 0, _DEPTH_BUFFER_WIDTH , _DEPTH_BUFFER_HEIGHT };
+				break;
+			}
+			default:
+			{
+				m_d3dShadowMapViewport[i] = { 0, 0, _SPOT_DEPTH_BUFFER_WIDTH , _SPOT_DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f };
+				m_d3dShadowScissorRect[i] = { 0, 0, _SPOT_DEPTH_BUFFER_WIDTH , _SPOT_DEPTH_BUFFER_HEIGHT };
+				break;
+			}
+			}
+		}
 		m_d3dViewport = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT, 0.0f, 1.0f };
 		m_d3dScissorRect = { 0, 0, FRAME_BUFFER_WIDTH , FRAME_BUFFER_HEIGHT };
 		m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -49,6 +115,8 @@ CCamera::CCamera(CCamera* pCamera)
 		m_xmf3LookAtWorld = XMFLOAT3(0.0f, 0.0f, 0.0f);
 		m_nMode = 0x00;
 		m_pPlayer = NULL;
+
+		
 	}
 }
 
@@ -81,6 +149,55 @@ void CCamera::GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlane
 {
 	m_xmf4x4Proj = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle), //왼손좌표계 기준의 투영 변환 행렬을 만드는 함수
 		fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+
+	m_fnearZ = fNearPlaneDistance;
+	m_fFarZ = fFarPlaneDistance;
+
+	XMMATRIX proj = XMLoadFloat4x4(&m_xmf4x4Proj);
+	XMMATRIX invProj = XMMatrixInverse(nullptr, proj);
+	XMStoreFloat4x4(&m_xmf4x4InvProj, invProj);
+}
+
+void CCamera::GenerateLightsProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fAspectRatio, float fFOVAngle , float ViewWidht, float ViewHeight)
+{
+	//TODO:: 여기 부분 안쓸듯 ==> CaseCade ShadowMapping 도전할때 활용할듯
+	for (int i = 0; i < 5; i++)
+	{
+		/*
+		// Spot Light : position + direction
+		float fFovAngle = 120.0f; // m_pLights->m_pLights[j].m_fPhi = cos(60.0f);
+		//float fAspectRatio = float(_DEPTH_BUFFER_WIDTH) / float(_DEPTH_BUFFER_HEIGHT);
+		float fAspectRatio = 1;
+		float fNearPlaneDistance = 1.0f, fFarPlaneDistance = pLights[i].fallOffEnd;
+		xmmtxLProjection = XMMatrixPerspectiveFovLH(XMConvertToRadians(fFovAngle), fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+	
+		//XMStoreFloat4x4(&m_xmf4x4LightViews[i], view);
+//XMStoreFloat4x4(&m_xmf4x4LightProjs[i], xmmtxLProjection);
+
+		float width = 50; //이게 작아야 훨씬 고퀄리티 그림자를 만들 수 있따
+		float height = 50;
+		float nearZ = 1.0f;
+		float farZ = 200.0f;
+		xmmtxLProjection = XMMatrixOrthographicLH(
+			width,
+			height,
+			nearZ,
+			farZ
+		);
+
+		*/
+
+		if (i == 0)
+		{
+			m_xmf4x4LightProjs[i] = Matrix4x4::OrthographicLH(ViewWidht, ViewHeight, fNearPlaneDistance, fFarPlaneDistance);
+		}
+		else
+		{
+			m_xmf4x4LightProjs[i] = Matrix4x4::PerspectiveFovLH(XMConvertToRadians(fFOVAngle), 
+				fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+		}
+		m_xmf4x4LightInvProj[i] = Matrix4x4::Inverse(m_xmf4x4LightProjs[i]);
+	}
 }
 
 void CCamera::GenerateViewMatrix(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3LookAt, XMFLOAT3 xmf3Up)
@@ -94,7 +211,9 @@ void CCamera::GenerateViewMatrix(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3LookAt, XMF
 
 void CCamera::GenerateViewMatrix()
 {
-	m_xmf4x4View = Matrix4x4::LookAtLH(m_xmf3Position, m_xmf3LookAtWorld, m_xmf3Up);//왼존 좌표계 기준 카메라 변환 행렬
+	m_xmf4x4View = Matrix4x4::LookAtLH(m_xmf3Position, m_xmf3LookAtWorld, m_xmf3Up);//왼손 좌표계 기준 카메라 변환 행렬
+
+	GenerateFrustum();
 }
 
 void CCamera::RegenerateViewMatrix()
@@ -116,13 +235,86 @@ void CCamera::RegenerateViewMatrix()
 	m_xmf4x4View._41 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Right);
 	m_xmf4x4View._42 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Up);
 	m_xmf4x4View._43 = -Vector3::DotProduct(m_xmf3Position, m_xmf3Look);
+
+	GenerateFrustum();
 }
 
+void CCamera::RegenerateLightViewProjMatrix(Light* pLights)
+{
+
+	// 0 : Directional Light
+	// 1~4 : Spot Light
+
+	for (int i = 0; i < SHADOWMAPS; i++)
+	{
+		if (pLights[i].bIsShadowSet == 0) //==> 기본적으로 무조건 1로 넘어오겠지만, 조명 갯수가 부족한 경우
+		{
+			continue;
+		}
+		//0번 인덱스의 그림자는 무조건 DirectionLight니까
+		pLights[0].position = Vector3::Subtract(GetPosition(), Vector3::ScalarProduct(pLights[0].direction, 50));
+		pLights[i].viewProj = Matrix4x4::Identity();
+		pLights[i].invProj = Matrix4x4::Identity();
+
+		XMFLOAT3 xmf3Position = pLights[i].position;
+		XMFLOAT3 xmf3dir = pLights[i].direction;
+		XMFLOAT3 xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
+		
+		if (abs(Vector3::DotProduct(xmf3Up, xmf3dir) + 1.0f) < 1e-5)
+		{
+			xmf3Up = XMFLOAT3(1.0f, 0.0f, 0.0f);
+		}
+
+		XMMATRIX view = XMMatrixLookAtLH(XMLoadFloat3(&xmf3Position), XMLoadFloat3(&Vector3::Add(xmf3Position , xmf3dir)), XMLoadFloat3(&xmf3Up));
+		XMMATRIX xmmtxLProjection;
+		if (i == 0) //Direction Light에 그림자
+		{
+			float width = 100; //이게 작아야 훨씬 고퀄리티 그림자를 만들 수 있따
+			float height = 100;
+			float nearZ = 1.0f;
+			float farZ = 200.0f;
+			xmmtxLProjection = XMMatrixOrthographicLH(
+				width,
+				height,
+				nearZ,
+				farZ
+			);
+		}
+		else //Spot Light에 그림자
+		{
+			float fFovAngle = 160.0f; //
+			float fAspectRatio = 1;
+			float fNearPlaneDistance =  1.0f, fFarPlaneDistance = pLights[i].fallOffEnd;
+			xmmtxLProjection = XMMatrixPerspectiveFovLH(XMConvertToRadians(fFovAngle), fAspectRatio, fNearPlaneDistance, fFarPlaneDistance);
+		}
+
+		//XMStoreFloat4x4(&m_xmf4x4LightViews[i], view);
+		//XMStoreFloat4x4(&m_xmf4x4LightProjs[i], xmmtxLProjection);
+
+		if (i == 1 || i == 2)
+		{
+			view = XMMatrixLookAtLH(XMLoadFloat3(&xmf3Position), XMLoadFloat3(&Vector3::Add(xmf3Position, xmf3dir)), XMLoadFloat3(&xmf3Up));
+		}
+		
+		XMStoreFloat4x4(&pLights[i].viewProj, XMMatrixTranspose(XMMatrixMultiply(view, xmmtxLProjection)));
+		XMStoreFloat4x4(&pLights[i].invProj, XMMatrixTranspose(XMMatrixInverse(NULL, xmmtxLProjection)));
+	}
+}
+
+//XMFLOAT3 CCamera::UpdateDirectionalLightPostion(XMFLOAT3 LightPosition, XMFLOAT3 LightDirection, float shadowDistance)
+//{
+//
+//	XMFLOAT3 lightPos = Vector3::Subtract(GetPosition(), LightDirection * shadowDistance);
+//	return lightPos;
+//}
 
 
 void CCamera::CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	UINT ncbElementBytes = ((sizeof(VS_CB_CAMERA_INFO) + 255) & ~255); //256의 배수
+	m_pd3dcbCamera_Info = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 
+	m_pd3dcbCamera_Info->Map(0, NULL, (void**)&m_pcbMappedCamera_Info);
 }
 
 void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList) //Shader에다가 해당 상수 버퍼를 연결하는 중
@@ -131,14 +323,58 @@ void CCamera::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList) 
 	* 루트 파라미터 인덱스를 같은 곳에 넣을 수 있지만 크기 제한이 있고, 오프셋을 항상 잘 지켜주어야 한다.
 	* 또한 크기를 직접 전부 알고 세심히 정해줘야하는것도 잊지 말아야 한다.
 	*/
-	XMFLOAT4X4 xmf4x4View;
-	XMStoreFloat4x4(&xmf4x4View, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4View, 0); //루트 시그니쳐에서 설정한 루트 파라미터 1번에 연결,float4x4니까 float가 총 16개 임으로 2번째 파라미터값 16
-	XMFLOAT4X4 xmf4x4Projection;
-	XMStoreFloat4x4(&xmf4x4Projection,
+
+	
+	XMStoreFloat4x4(&m_pcbMappedCamera_Info->m_xmf4x4View, 
+		XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4View)));
+	XMStoreFloat4x4(&m_pcbMappedCamera_Info->m_xmf4x4Proj,
 		XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4Proj)));
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4Projection, 16); // 루트 시그니쳐에서 설정한 루트 파라미터 1번에 연결, float4x4니까 16byte, 같은 파라미터 1번에 연결된 값이 이미 있으니까 Offset으로 그 이후로 연결 바인딩시켜주고 있다. 16이 마지막에 들어간 이유
+	XMStoreFloat4x4(&m_pcbMappedCamera_Info->m_xmf4x4invProj,
+		XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4InvProj)));
+	XMStoreFloat3(&m_pcbMappedCamera_Info->m_xmf3Position, 
+		XMLoadFloat3(&m_xmf3Position));
+
+	// ::memcpy(&m_pcbMappedCamera->m_xmf3Position, &m_xmf3Position, sizeof(XMFLOAT3));
+	
+	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbCamera_Info->GetGPUVirtualAddress();
+	pd3dCommandList->SetGraphicsRootConstantBufferView(1, d3dGpuVirtualAddress);
+	
+	//계산 파이프라인에서 접근
+	//pd3dCommandList->SetComputeRootConstantBufferView(0, d3dGpuVirtualAddress);
+
 }
+void CCamera::UpdateShaderVariablesCompute(ID3D12GraphicsCommandList* pd3dCommandList) //Shader에다가 해당 상수 버퍼를 연결하는 중
+{
+
+	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbCamera_Info->GetGPUVirtualAddress();
+
+	//계산 파이프라인에서 접근
+	pd3dCommandList->SetComputeRootConstantBufferView(0, d3dGpuVirtualAddress);
+
+}
+
+//이거 지금보니까 그림자를 위해서 내가 만들어둔거네? 근데 이거 
+void CCamera::UpdatePreShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList, int index) //Shader에다가 해당 상수 버퍼를 연결하는 중
+{
+
+
+		XMStoreFloat4x4(&m_pcbMappedCamera_Info->m_xmf4x4View,
+			XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4LightViews[index])));
+		XMStoreFloat4x4(&m_pcbMappedCamera_Info->m_xmf4x4Proj,
+			XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4LightProjs[index])));
+
+		XMStoreFloat3(&m_pcbMappedCamera_Info->m_xmf3Position,
+			XMLoadFloat3(&m_xmf3LightPosition[index]));
+
+
+		D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbCamera_Info->GetGPUVirtualAddress();
+		pd3dCommandList->SetGraphicsRootConstantBufferView(1, d3dGpuVirtualAddress);
+
+		//
+	
+	
+}
+
 
 void CCamera::ReleaseShaderVariables()
 {
@@ -151,6 +387,16 @@ void CCamera::SetViewportsAndScissorRects(ID3D12GraphicsCommandList* pd3dCommand
 	//Direct12는 상태 머신이기 때문에, 상태를 명시적으로 연결해줘야 한다. 그래서 CommandList에 Set 명령어가 굉장히 많다.
 	pd3dCommandList->RSSetScissorRects(1, &m_d3dScissorRect);
 	pd3dCommandList->RSSetViewports(1, &m_d3dViewport);
+}
+
+XMFLOAT4X4 CCamera::GetInvProjectinMatrix()
+{
+	return m_xmf4x4InvProj;
+}
+
+XMFLOAT4X4 CCamera::GetProjectinMatrix()
+{
+	return m_xmf4x4Proj;
 }
 
 CSpaceShipCamera::CSpaceShipCamera(CCamera* pCamera) : CCamera(pCamera)

@@ -13,12 +13,19 @@ struct VS_CB_CAMERA_INFO //VS에 넘겨줄 상수 버퍼
 {
 	XMFLOAT4X4 m_xmf4x4View; //카메라 변환 행렬
 	XMFLOAT4X4 m_xmf4x4Proj; //투영 변환 행렬
+	XMFLOAT4X4 m_xmf4x4invProj; //투영 변환 역행렬
+	XMFLOAT3 m_xmf3Position; // 카메라의 위치
 };
 
 //3D 게임 프로그래밍에 가장 중요 요소인 카메라에 대한 클래스 ==> 카메라가 3D 세상을 보여줄 눈이 되어줄 것이다.
 class CCamera
 {
 protected:
+
+	//카메라 
+	ComPtr<ID3D12Resource> m_pd3dcbCamera_Info; 
+	VS_CB_CAMERA_INFO* m_pcbMappedCamera_Info = NULL;
+
 	//카메라의 위치(월드좌표계) 벡터이다.
 	XMFLOAT3 m_xmf3Position;
 	//카메라의 로컬 x-축(Right), y-축(Up), z-축(Look)을 나타내는 벡터이다.*/
@@ -42,17 +49,35 @@ protected:
 
 	XMFLOAT4X4 m_xmf4x4View; //카메라 변환 행렬
 	XMFLOAT4X4 m_xmf4x4Proj; // 투영 변환 행렬
+	XMFLOAT4X4 m_xmf4x4InvProj;// 투영 변환 역행렬
+
+	XMFLOAT4X4* m_xmf4x4LightViews; //카메라 변환 행렬 대체할 조명
+	XMFLOAT4X4* m_xmf4x4LightProjs; //
+	XMFLOAT4X4* m_xmf4x4LightInvProj;
+	XMFLOAT3* m_xmf3LightPosition;//
 
 	//뷰포트랑 시져렉트
 	D3D12_VIEWPORT m_d3dViewport;
 	D3D12_RECT m_d3dScissorRect;
 
+	//ShadowMap을 위한 뷰포트와 시져렉트
+
 	//카메라를 가지고 있는 플레이어에 대한 포인터
 	CPlayer* m_pPlayer = NULL;
 
+
+
 public:
+	
+	BoundingFrustum m_BoundingFrustumCamera;
+
+	void GenerateFrustum();
+	
+	D3D12_VIEWPORT* m_d3dShadowMapViewport = NULL;
+	D3D12_RECT* m_d3dShadowScissorRect = NULL;
+
 	CCamera();
-	CCamera(CCamera* pCamera); //의도가 무엇일까?
+	CCamera(CCamera* pCamera); //카메라 재설정을 위해서
 	virtual ~CCamera();
 
 	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList //Shader에 필요한 설정등을 만드는것. CShader나 Object에서 따로 처리하지 않나? 하겠지만 카메라에 상수버퍼라던가 따로 정의해주는게 정리가 용이하기에 따로 만든다.
@@ -61,6 +86,11 @@ public:
 	virtual void ReleaseShaderVariables(); //항상 C++, Direct12나 게임을 만들때는 Release와 같은 메모리를 위한 요소는 항상 생각하는 습관을 가져야 한다.
 
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList); //버퍼 동기화라던가 업데이트라던가 계속해줘야 한다.
+	virtual void UpdateShaderVariablesCompute(ID3D12GraphicsCommandList* pd3dCommandList);
+
+	//그림자를 위해서 필요한 거 ==> 이것도 사용해보니 문제 있어서 사용안하는 함수 이유는 같은 컨테이너에
+	//집어넣은게 문제
+	virtual void UpdatePreShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList, int index);
 
 	void GenerateViewMatrix();
 	void GenerateViewMatrix(XMFLOAT3 xmf3Position, XMFLOAT3 xmf3LookAt, XMFLOAT3 xmf3Up); //카메라 변환 행렬을 추가해주는 함수
@@ -68,8 +98,12 @@ public:
 축(Look)이 서로 직교하지 않을 수 있다. 카메라의 로컬 x-축(Right), y-축(Up), z-축(Look)이 서로 직교하도록 만들
 어준다.*/
 	void RegenerateViewMatrix();
+	void RegenerateLightViewProjMatrix(Light* pLights);
 
 	void GenerateProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fAspectRatio, float fFOVAngle); //투영 행렬을 추가해주는 함수
+	
+	//이거 없어져도 됨 사용 안함
+	void GenerateLightsProjectionMatrix(float fNearPlaneDistance, float fFarPlaneDistance, float fAspectRatio, float fFOVAngle, float ViewWidht, float ViewHeight); //투영 행렬을 추가해주는 함수
 
 	void SetViewport(int xTopLeft, int yTopLeft, int nWidth, int nHeight, float fMinZ = //뷰포트 설정 ==> 실제 카메라가 바라보고있는 화면을 스크린 기준 얼만큼 보여줄지 영역을 설정한 Rect
 		0.0f, float fMaxZ = 1.0f);
@@ -77,7 +111,8 @@ public:
 	void SetScissorRect(LONG xLeft, LONG yTop, LONG xRight, LONG yBottom); //  씨져렉트 설정==>뷰포트 내부에 어디를 얼만큼 마스킹 할지 등을 설정해준다.
 
 	virtual void SetViewportsAndScissorRects(ID3D12GraphicsCommandList* pd3dCommandList); //GPU에 실제로 ViewPort, ScissorRect를 추가해주는 Command 명령어를 내리는 부분.
-
+	virtual XMFLOAT4X4 GetInvProjectinMatrix();
+	virtual XMFLOAT4X4 GetProjectinMatrix();
 
 	void SetPlayer(CPlayer* pPlayer) { m_pPlayer = pPlayer; } // 카메라를 갖고있는 플레이어를 지정. 이렇게 해줘야하는 이유로 생각이 드는건 게임내의 플레이어객체가 여러개일 수 있음으로 실제 내가 플레이하는 캐릭터만 카메라를 가졍야 함으로
 	CPlayer* GetPlayer() { return(m_pPlayer); } // 카메라에 연결된 플레이어를 반환
@@ -116,7 +151,9 @@ public:
 	//3인칭 카메라에서 카메라가 바라보는 지점을 설정한다. 일반적으로 플레이어를 바라보도록 설정한다.
 	virtual void SetLookAt(XMFLOAT3& xmf3LookAt) { }
 
-
+	public:
+		float m_fnearZ;
+		float m_fFarZ;
 };
 
 class CSpaceShipCamera : public CCamera //비행기 화면 기준의 카메라 설정ㅇ

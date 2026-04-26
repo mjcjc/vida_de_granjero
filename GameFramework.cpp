@@ -1,14 +1,11 @@
 #include "stdafx.h"
+#include"ServerPacketHandler.h"
 #include "GameFramework.h"
 
 
 CGameFramework::CGameFramework()
 {
 	//예제에는 null값을 다 집어넣는데 나는 ComPtr을 썼으므로 자동 초기화 된다.
-	m_nRtvDescriptorIncrementSize = 0;
-
-	m_nDsvDescriptorIncrementSize = 0;
-
 
 	//m_nFenceValue = 0;
 
@@ -38,8 +35,30 @@ CGameFramework::~CGameFramework()
 //응용 프로그램이 실행되고 주 윈도우가 생성되면 호출되는 함수이다.
 bool CGameFramework::OnCreate(HINSTANCE hInstantce, HWND hMainWnd)
 {
+
 	m_hInstance = hInstantce;	//윈도우 인스턴스
 	m_hWnd = hMainWnd;	//윈도우 핸들
+
+	//-----서버 도입부 연결------
+	m_ClientNetwork = std::make_unique<ClientNetwork>();
+	if (!m_ClientNetwork->Start(L"127.0.0.1", 7777))
+	{
+
+		std::wcout << L"Failed" << std::endl;
+		// 여기서 false 리턴할지, 그냥 오프라인으로 갈지는 네 선택
+		return false;
+	}
+	else
+	{
+		std::wcout << L"Connected Server" << std::endl;
+		Protocol::C_LOGIN pkt;
+		pkt.set_accountid(1);
+		pkt.set_password(2);
+		auto sendbuffer = ServerPacketHandler::MakeSendBuffer(pkt);
+		m_ClientNetwork->SendToServer(sendbuffer);
+
+	}
+	//-----서버 도입부 연결 끝------
 
 	CreateDirect3dDevice();	//Device를 만들고
 	CreateCommandQueueAndList();	// CommandList는 Device로 만들 수 있으니 이후에 선언
@@ -50,8 +69,42 @@ bool CGameFramework::OnCreate(HINSTANCE hInstantce, HWND hMainWnd)
 
 	BuildObject(); // Device와 SwapChain 등 모든 설정이 완료된 이후 게임 객체를 만들어야 정상적으로 만들어진다.
 
+	InitImGui(); //ImGui를 초기화 한다
+
+
+
 	return (true);
 
+}
+
+
+void CGameFramework::InitImGui()
+{
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	m_io = ImGui::GetIO();
+	m_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // 키보드 입력 허용
+	
+	ImGui::StyleColorsDark();
+
+	D3D12_DESCRIPTOR_HEAP_DESC desc;
+	::ZeroMemory(&desc,sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
+	desc.NumDescriptors = 1; //Imgui용 한개
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	m_pd3dDevice->CreateDescriptorHeap(&desc, __uuidof(ID3D12DescriptorHeap),
+		(void**)m_ImGuiSRVDescriptorHeap.GetAddressOf());
+
+	ImGui_ImplWin32_Init(m_hWnd);
+	ImGui_ImplDX12_Init(
+		m_pd3dDevice.Get(),
+		m_nSwapChainBuffers,
+		DXGI_FORMAT_R8G8B8A8_UNORM,    // 스왑체인 백버퍼 포맷과 동일하게
+		m_ImGuiSRVDescriptorHeap.Get(),
+		m_ImGuiSRVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+		m_ImGuiSRVDescriptorHeap->GetGPUDescriptorHandleForHeapStart()
+	);
 }
 
 void CGameFramework::OnDestroy()
@@ -93,116 +146,94 @@ void CGameFramework::OnDestroy()
 //DXGI Factory >> Adapter >> Device >> Fance >> Viewport
 void CGameFramework::CreateDirect3dDevice()
 {
-	HRESULT hResult; //이건 생성 성공여부를 받아오기 위한 변수
+	HRESULT hResult;
 
-	UINT nDXGIFactoryFlags = 0; // DXGIFactoryFlag의 값을 0으로 우선 초기화
+	UINT nDXGIFactoryFlags = 0;
 #if defined(_DEBUG)
 	ComPtr<ID3D12Debug> pd3dDebugController;
-	hResult = D3D12GetDebugInterface(__uuidof(ID3D12Debug), (void**)pd3dDebugController.GetAddressOf());
-
-	if (pd3dDebugController)
+	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&pd3dDebugController))))
 	{
 		pd3dDebugController->EnableDebugLayer();
-		pd3dDebugController.Reset(); //어쩌피 CreateDirect3dDevice 함수가 끝나고 나면 ComPtr은 스마트 포인터라 자동으로 Release 해
-		//그래서 구지 Reset을 안해줘도 되는거다. 하지만 Reset으로 명시적으로 해제해주는것도 문제는 없다.
 	}
 	nDXGIFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-
 #endif
 
-	hResult = ::CreateDXGIFactory2(nDXGIFactoryFlags, __uuidof(IDXGIFactory4), (void**)m_pdxgiFactory.GetAddressOf());
-	// DXGI의 Factory를 만들어 Swap Chain을 만들어 낸다.
-	// 또한 Adapter를 만들어 낼 수 있고 그걸 통해서 Device를 만들어 낼 수 있다.
+	hResult = CreateDXGIFactory2(nDXGIFactoryFlags, IID_PPV_ARGS(&m_pdxgiFactory));
 
-	ComPtr<IDXGIAdapter1> pd3dAdapter;	// 그래픽 디바이스에 접근하는 거라고 생각하면 된다.
+	ComPtr<IDXGIAdapter1> bestAdapter;
+	SIZE_T maxDedicatedVideoMemory = 0;
 
-	//EnumAdapters가 내 PC 그래픽 카드들을 전부 순서대로 나열해주는 함수이고 이 함수를 통해서 pd3dAdapter에다가 그래픽 카드 ==> EnumAdapters는 Enum으로 열거형으로 나열되어 읽어지는 그래픽 디바이스를 하나하나 순차적으로 접근하는거 Enum을 공부하고 나니까 좀 더 잘 보인다.
-	//연결해주며 그래픽 카드 갯수만큼 반복해준다.
-	for (UINT i = 0; DXGI_ERROR_NOT_FOUND != m_pdxgiFactory->EnumAdapters1(i, pd3dAdapter.GetAddressOf()); i++)
+	for (UINT i = 0; ; ++i)
 	{
-		DXGI_ADAPTER_DESC1 dxgiAdapterDesc;	//Adapter를 위한 DESC를 선언
-		pd3dAdapter->GetDesc1(&dxgiAdapterDesc);	//DESC를 IDXGIAdapter1에다가 연결
-		if (dxgiAdapterDesc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) continue;	//만일 현재 선택된 그래픽카드가 소프트웨어면 넘어간다
-		if (SUCCEEDED(D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_12_0, //만일 현재 선택된 그래픽카드가 존재하며
-			__uuidof(ID3D12Device), (void**)m_pd3dDevice.GetAddressOf()))) break;	//CreateDevice가 성공을 하면 이 반복문을 나간다.
+		ComPtr<IDXGIAdapter1> adapter;
+		if (FAILED(m_pdxgiFactory->EnumAdapters1(i, &adapter)))
+			break;
 
+		DXGI_ADAPTER_DESC1 desc;
+		adapter->GetDesc1(&desc);
+
+		// 1. 소프트웨어 어댑터 제외
+		if (desc.Flags & DXGI_ADAPTER_FLAG_SOFTWARE)
+			continue;
+
+		// 2. D3D12 지원 여부 체크
+		if (FAILED(D3D12CreateDevice(
+			adapter.Get(),
+			D3D_FEATURE_LEVEL_12_0,
+			_uuidof(ID3D12Device),
+			nullptr)))
+		{
+			continue;
+		}
+
+		// 3. VRAM 가장 큰 어댑터 선택
+		if (desc.DedicatedVideoMemory > maxDedicatedVideoMemory)
+		{
+			maxDedicatedVideoMemory = desc.DedicatedVideoMemory;
+			bestAdapter = adapter;
+		}
 	}
-	//이 반복문은 가장 첫번째 그래픽 카드이면서 가상 그래픽 카드가 아닌것을 선택하고 Device를 만들어내는것.
 
-	/*
-	* 여기에 조건문으로 가장 성능이 좋은 하드웨어 그래픽 카드를 선택하도록 하는 설정을 넣어줄 수 있다.
-	*/
-
-	if (!pd3dAdapter)	//하드웨어 그래픽 카드가 존재 안하면 가상의 그래픽 카드를 만들어라
+	// 4.최종 Device 생성
+	if (bestAdapter)
 	{
-		m_pdxgiFactory->EnumWarpAdapter(__uuidof(IDXGIAdapter1), (void**)pd3dAdapter.GetAddressOf());
-		D3D12CreateDevice(pd3dAdapter.Get(), D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), (void**)m_pd3dDevice.GetAddressOf());
+		hResult = D3D12CreateDevice(
+			bestAdapter.Get(),
+			D3D_FEATURE_LEVEL_12_0,
+			IID_PPV_ARGS(&m_pd3dDevice));
+	}
+	else
+	{
+		// 하드웨어 GPU가 없다면 WARP
+		ComPtr<IDXGIAdapter> warpAdapter;
+		m_pdxgiFactory->EnumWarpAdapter(IID_PPV_ARGS(&warpAdapter));
+		hResult = D3D12CreateDevice(
+			warpAdapter.Get(),
+			D3D_FEATURE_LEVEL_12_0,
+			IID_PPV_ARGS(&m_pd3dDevice));
 	}
 
-	//MSAA 설정을 위한 부분
-	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS d3dMsaaQualityLevels;
-	d3dMsaaQualityLevels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;	//
-	d3dMsaaQualityLevels.SampleCount = 4;	//MSAA를 위한 샘플러를 4개로 쪼갠다는 의미
-	d3dMsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;	//MSAA 비활성화
-	d3dMsaaQualityLevels.NumQualityLevels = 0;	//MSAA를 비활성화 했으니 수준도 0으로 설정
-	//사실 위에 설정한 부분은 의미가 없다 아래 CheckFeatureSupport 함수를 통해서 현재 Device를 생성했던 Adapter의
-	//MSAA 지원 여부와 수준을 가져오기 떄문
-	m_pd3dDevice->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &d3dMsaaQualityLevels,
-		sizeof(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS));	//
 
-	m_nMasaa4xQualityLevels = d3dMsaaQualityLevels.NumQualityLevels; //MSAA 수준을 가져오고
-	m_bMsaa4xEnable = (m_nMasaa4xQualityLevels > 1) ? true : false;	//MSAA가 1보다 크면 MSAA를 활성화 1이면 어쩌피 비활성화
-	//와 똑같다.
+	// Fence 생성
 
-	hResult = m_pd3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), (void**)m_pd3dFence.GetAddressOf());
+	hResult = m_pd3dDevice->CreateFence(
+		0,
+		D3D12_FENCE_FLAG_NONE,
+		IID_PPV_ARGS(&m_pd3dFence));
+
 	m_nFenceValue[0] = 0;
 	m_nFenceValue[1] = 0;
-	//CPU와 GPU간의 명령어 동기화를 위한 펜스를 생성하고 펜스 값을 0을 설정.
-	// 두 번째 인자의 경우 특별한 기능없으면 저렇게 쓰는데 만일 멀티 쓰레드를 사용한다면
-	// D3D12_FENCE_FLAG_SHARED로 설정할 수 도 있다.
 
-	m_hFenceEvent = ::CreateEvent(NULL, FALSE, FALSE, NULL);
-	/*  펜스 동기화를 위한 이벤트 객체를 생성한다.
+	m_hFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-	- 두 번째 인자(FALSE): 자동 리셋(auto-reset) 이벤트로 설정.
-	  SetEvent()가 호출되면 이벤트 상태가 signaled(TRUE)가 되고,
-	  대기 중인 하나의 스레드만 깨어난 후 자동으로 다시 non-signaled(FALSE) 상태로 리셋된다.
-
-	- 세 번째 인자(FALSE): 이벤트의 초기 상태는 non-signaled(FALSE)로 설정하여,
-	  WaitForSingleObject() 등의 대기 함수 호출 시 기본적으로 대기 상태에 진입하도록 한다.*/
-
-	  /*
-	  * HANDLE CreateEvent(
-		LPSECURITY_ATTRIBUTES lpEventAttributes,
-		BOOL bManualReset, //수동으로 리셋한껀지 자동으로 리셋 이벤트를 발생할건지를 TRUE, FALSE로 지정한다.
-		BOOL bInitialState, //이벤트 객체의 초기 상태를 의미. TRUE이면 signaled 상태 FALSE이면 non-signaled 상태
-		LPCWSTR lpName
-  );
-	  */
-
-	  //m_d3dViewport.TopLeftX = 0;
-	  //m_d3dViewport.TopLeftY = 0;
-	  //m_d3dViewport.Width = static_cast<float>(m_nWndClientWidth);
-	  //m_d3dViewport.Height = static_cast<float>(m_nWndClientHeight);
-	  //m_d3dViewport.MinDepth = 0.0f;
-	  //m_d3dViewport.MaxDepth = 1.0f;
-	  ////뷰포트 설정
-
-	  //m_d3dScissorRect = { 0,0,m_nWndClientWidth ,m_nWndClientHeight };
-	  ////씨저 사각형 생성
-
-	if (pd3dAdapter) pd3dAdapter.Reset();	//스마트 포인터라 없어도 되는 부분이지만 이건 내가 직접 없애고 싶어서
-	//넣은 부분이다.
-
-	/*
-	* 1. Device를 만들었다
-	* 2. 그래픽 카드에 정보를 읽어와 MSAA 설정등을 제어하고 있다.
-	* 3. CPU-GPU 동기화를 위한 Fence, 값, event 생성
-	* 4. viewport 초기화
-	* 5. scissorrect 초기화
-	*/
+	// Descriptor increment size
+	::gnCbvSrvDescriptorIncrementSize =
+		m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	::gnRtvDescriptorIncrementSize =
+		m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	::gnDsvDescriptorIncrementSize =
+		m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
-
 // CommandQueue >> CommandAllocator >> CommandList
 void CGameFramework::CreateCommandQueueAndList()
 {
@@ -305,8 +336,10 @@ void CGameFramework::CreateSwapChain()
 	::ZeroMemory(&dxgiSwapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));	//메모리를 0으로 모두 초기화
 
 	//스왑체인 MSAA 설정
-	dxgiSwapChainDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1;	//샘플링 갯수
-	dxgiSwapChainDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMasaa4xQualityLevels - 1) : 0;	//계산 수준 정하는거
+	//dxgiSwapChainDesc.SampleDesc.Count = (m_bMsaa4xEnable) ? 4 : 1;	//샘플링 갯수
+	//dxgiSwapChainDesc.SampleDesc.Quality = (m_bMsaa4xEnable) ? (m_nMasaa4xQualityLevels - 1) : 0;	//계산 수준 정하는거
+	dxgiSwapChainDesc.SampleDesc.Count = 1;	//샘플링 갯수
+	dxgiSwapChainDesc.SampleDesc.Quality = 0;
 	dxgiSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	dxgiSwapChainDesc.BufferCount = m_nSwapChainBuffers;
 	dxgiSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;	//버퍼끼리 스왑하는 방식을 지정하는것, 현재
@@ -321,7 +354,8 @@ void CGameFramework::CreateSwapChain()
 	dxgiSwapChainDesc.OutputWindow = m_hWnd;
 	dxgiSwapChainDesc.BufferDesc.Width = m_nWndClientWidth;
 	dxgiSwapChainDesc.BufferDesc.Height = m_nWndClientHeight;
-	dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	dxgiSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //HDR이 제대로 표현안된다고해서 SRGB를 붙혀봤음
+	//스왑체인을 생성할때는 SRGB 붙히면 안된다고 함 오류뜸 RTV에서만 SRGB로 해야함
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
 	dxgiSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
 
@@ -329,7 +363,6 @@ void CGameFramework::CreateSwapChain()
 
 	HRESULT hResult = m_pdxgiFactory->CreateSwapChain(m_pd3dCommandQueue.Get(), &dxgiSwapChainDesc,
 		(IDXGISwapChain**)m_pdxgiSwapChain.GetAddressOf());
-
 
 	m_pdxgiFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER);
 	//ALT + ENTER 키의 동작을 비활성화
@@ -347,7 +380,7 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 {
 	D3D12_DESCRIPTOR_HEAP_DESC d3dDescriptorHeapDesc;
 	::ZeroMemory(&d3dDescriptorHeapDesc, sizeof(D3D12_DESCRIPTOR_HEAP_DESC));
-	d3dDescriptorHeapDesc.NumDescriptors = m_nSwapChainBuffers;	//스왑 체인의 갯수와 동일하게 설정
+	d3dDescriptorHeapDesc.NumDescriptors = m_nSwapChainBuffers + 1 + 1 + 1;	//스왑 체인의 갯수와 동일하게 설정
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;	//RTV로 DescriptorHeap을 사용한다는 의미
 	d3dDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	d3dDescriptorHeapDesc.NodeMask = 0;
@@ -355,11 +388,10 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 		, (void**)m_pd3dRtvDescriptorHeap.GetAddressOf());
 	//렌더 타겟 서술자 힙(서술자의 개수는 스왑체인 버퍼의 개수로)을 생성한다.
 
-	m_nRtvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	//::gnRtvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	//DESCRIPTORHEAP에다가 실제로 값을 집어 넣을려면 서술자의 속성에 맞추어 원소의 크기를 설정해줘야 한다.
 
-
-	d3dDescriptorHeapDesc.NumDescriptors = 1; //물론 쉐도우 맵을 만들거나 할 경우 조명 갯수만큼 만들어질 수 있다.
+	d3dDescriptorHeapDesc.NumDescriptors = 1 + 5; //물론 쉐도우 맵을 만들거나 할 경우 조명 갯수만큼 만들어질 수 있다.
 	d3dDescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;	//RTV로 DescriptorHeap을 사용한다는 의미
 	d3dDescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	d3dDescriptorHeapDesc.NodeMask = 0;
@@ -367,21 +399,28 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 		, (void**)m_pd3dDsvDescriptorHeap.GetAddressOf());
 	//렌더 타겟 서술자 힙(서술자의 개수는 스왑체인 버퍼의 개수로)을 생성한다.
 
-	m_nRtvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	//::gnDsvDescriptorIncrementSize = m_pd3dDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
 }
 
 //굉장히 간단하게 만들지만 만약 디퍼드 렌더링같이 G버퍼를 활용하는 경우에는 일반적인 버퍼처럼 만들어서 따로 저장해줘야 한다.
 void CGameFramework::CreateRenderTargetViews()
 {
+	D3D12_RENDER_TARGET_VIEW_DESC d3dRenderTargetViewDesc;
+	d3dRenderTargetViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; //LDR == >HDR이 제대로 표현안된다고해서 SRGB를 붙혀봤음
+	d3dRenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	d3dRenderTargetViewDesc.Texture2D.MipSlice = 0;
+	d3dRenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+
 	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle =	//View를 만들때 Heap 연결을 해줘야 하고
 		m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();	//Heap에 시작 주소를 가져와야 한다.
 	for (UINT i = 0; i < m_nSwapChainBuffers; i++)	//Swap Chain 버퍼 갯수 만큼 반복
 	{
 		m_pdxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), (void**)m_ppd3dRenderTargetBuffers[i].GetAddressOf());
 		// SwapCahin을 만들면서 생성했던 버퍼를 GetBuffer 리소스에 연결.
-		m_pd3dDevice->CreateRenderTargetView(m_ppd3dRenderTargetBuffers[i].Get(), NULL, d3dRtvCPUDescriptorHandle);
-		d3dRtvCPUDescriptorHandle.ptr += m_nRtvDescriptorIncrementSize;
+		m_pd3dDevice->CreateRenderTargetView(m_ppd3dRenderTargetBuffers[i].Get(), &d3dRenderTargetViewDesc, d3dRtvCPUDescriptorHandle);
+		m_pd3dRTVCPUHandles[i] = d3dRtvCPUDescriptorHandle;
+		d3dRtvCPUDescriptorHandle.ptr += ::gnRtvDescriptorIncrementSize;
 		//연결된 리소스 백버퍼에다가 View Create 해준다. 이때 힙의 CPU 주소가 필요하다.
 		//나중에 CommandList에서 버퍼들을 연결해줄때는 GPU 주소가 필요하다. Swap Chain은 G버퍼를 활용하는 상황이 아니면
 		//따로 Heap의 GPU 주소를 가져와 저장하거나 사용할 일이 거의 없다. 물론 디퍼드 렌더링에서는 필수일 것이다.
@@ -436,35 +475,40 @@ void CGameFramework::CreateDepthStencilView()
 	m_pd3dDevice->CreateDepthStencilView(m_pd3dDepthStencilBuffer.Get(), NULL, d3dDsvCPUDescriptorHandle);
 	//깊이 스텐실 버퍼 View를 생성
 
-
 }
 
 //Scene 에 오브젝트를 초기에 생성해주는 과정 ==> 런타임 중 생성되는건 따로 구성해줘야 한다.
 void CGameFramework::BuildObject()
 {
+	//PSO 모두 초기화
+	CGraphicsCommon::GetInstance().InitCommonStates(m_pd3dDevice.Get());
+
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 
-	m_pScene = new CScene();
+	CScene* pStartScene = new CStartScene(m_hWnd, &m_GameTimer , std::move(m_ClientNetwork));
+	CSceneManager::GetInstance().PushScene(pStartScene);
+	m_pScene = CSceneManager::GetInstance().GetTopScene();
 
 	//카메라 객체를 생성하고 뷰포트, 씨저렉트, 투영 변환 행렬, 카메라 변환 행렬을 설정한다.
-	//m_pCamera = new CCamera();
-	//m_pCamera->SetViewport(0, 0, m_nWndClientWidth, m_nWndClientHeight, 0.0f, 1.0f);
-	//m_pCamera->SetScissorRect(0, 0, m_nWndClientWidth, m_nWndClientHeight);
-	//m_pCamera->GenerateProjectionMatrix(1.0f, 500.0f, float(m_nWndClientWidth) /
-	//	float(m_nWndClientHeight), 90.0f);
-	//m_pCamera->GenerateViewMatrix(XMFLOAT3(0.0f, 0.0f, -50.0f), XMFLOAT3(0.0f, 0.0f,
-	//	0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
+	m_pCamera = new CCamera();
+	m_pCamera->SetViewport(0, 0, m_nWndClientWidth, m_nWndClientHeight, 0.0f, 1.0f);
+	m_pCamera->SetScissorRect(0, 0, m_nWndClientWidth, m_nWndClientHeight);
+	m_pCamera->GenerateProjectionMatrix(1.0f, 500.0f, float(m_nWndClientWidth) /
+		float(m_nWndClientHeight), 90.0f);
+	m_pCamera->GenerateLightsProjectionMatrix(1.01f, 5000.0f, ASPECT_RATIO, 60.0f, 1280, 720);
+	m_pCamera->GenerateViewMatrix(XMFLOAT3(0.0f, 0.0f, -50.0f), XMFLOAT3(0.0f, 0.0f,
+		0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f));
 
+	m_pCamera->CreateShaderVariables(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
 	//if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice.Get());	// Scene에 오브젝트들을 생성하는 과정.
 
 	//씬이 존재하면 씬 내부에 오브젝트들을 생성한다.
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
 
-	CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice.Get(),
+	/*CAirplanePlayer* pAirplanePlayer = new CAirplanePlayer(m_pd3dDevice.Get(),
 		m_pd3dCommandList.Get(), m_pScene->GetGraphicsRootSignature());
 	m_pPlayer = pAirplanePlayer;
-	m_pCamera = m_pPlayer->GetCamera();
-
+	m_pCamera = m_pPlayer->GetCamera();*/
 
 	//모든 생성 명령어 관련해서 실행시키기전에 항상 CommandList를 Close 해줘야 한ㄷ다.
 	m_pd3dCommandList->Close();
@@ -476,6 +520,66 @@ void CGameFramework::BuildObject()
 	WaitForGpuComplete();
 	//그래픽 리소스들을 생성하는 과정에 생성된 업로드 버퍼들을 소멸시킨다.
 	if (m_pScene) m_pScene->ReleaseUploadBuffers();
+
+	m_GameTimer.Reset();	//BuildObject가 실행되는 상황이면 우선 게임 타이머를 리셋해주는게 기본이다.
+
+}
+
+void CGameFramework::ReBuildObject()
+{
+	m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
+
+	m_pScene = CSceneManager::GetInstance().GetTopScene();
+
+	//씬이 존재하면 씬 내부에 오브젝트들을 생성한다.
+	if (m_pScene)
+	{
+		m_pScene->BuildObjects(m_pd3dDevice.Get(), m_pd3dCommandList.Get());
+		int n = CSceneManager::GetInstance().GetSceneNumber();
+		switch (n)
+		{
+		case 0 :
+			{
+
+			break;
+			}
+		case 1: //MainScene에 경우
+			{
+				//후처리를 위한 설정을 추가 중.
+				DXGI_FORMAT pdxgiResourceFormats[1] = { DXGI_FORMAT_R16G16B16A16_FLOAT  };
+				D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle = m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+				d3dRtvCPUDescriptorHandle.ptr += (::gnRtvDescriptorIncrementSize * 2);
+				D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle = m_pd3dDsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+				d3dDsvCPUDescriptorHandle.ptr += (::gnDsvDescriptorIncrementSize * 1);
+				m_pScene->CreateShaderResourceViewRtvs(m_pd3dDevice.Get(), m_pd3dCommandList.Get(), 1, pdxgiResourceFormats, d3dRtvCPUDescriptorHandle);
+				m_pScene->CreateShaderResourceViewDsvs(m_pd3dDevice.Get(), m_pd3dCommandList.Get(), 5, d3dDsvCPUDescriptorHandle, m_pd3dDepthStencilBuffer.Get());
+				m_pScene->CreateShaderResourceViewAndUAVStructuredBuffer(m_pd3dDevice.Get(),m_pd3dCommandList.Get() );
+				break;
+			}
+		case 2:
+			{
+			break;
+			}
+		default:
+			{
+			break;
+			}
+		}
+	}
+
+	//모든 생성 명령어 관련해서 실행시키기전에 항상 CommandList를 Close 해줘야 한ㄷ다.
+	m_pd3dCommandList->Close();
+
+	ID3D12CommandList* ppd3dCommandLists[] = { m_pd3dCommandList.Get() };
+	m_pd3dCommandQueue->ExecuteCommandLists(1, ppd3dCommandLists);
+
+	//그래픽 명령 리스트들이 모두 실행될 때까지 기다린다.
+	WaitForGpuComplete();
+	//그래픽 리소스들을 생성하는 과정에 생성된 업로드 버퍼들을 소멸시킨다.
+	if (m_pScene)
+	{
+		m_pScene->ReleaseUploadBuffers();
+	}
 
 	m_GameTimer.Reset();	//BuildObject가 실행되는 상황이면 우선 게임 타이머를 리셋해주는게 기본이다.
 
@@ -495,13 +599,14 @@ void CGameFramework::ReleaseObjects()
 //윈도우 API 마우스 입력 이벤트 처리
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	m_pScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 	switch (nMessageID)
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 		//마우스 캡쳐를 하고 현재 마우스 위치를 가져온다
-		::SetCapture(hWnd);
-		::GetCursorPos(&m_ptOldCursorPos);
+		//::SetCapture(hWnd);
+		//::GetCursorPos(&m_ptOldCursorPos);
 		break;
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
@@ -521,6 +626,11 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 	switch (nMessageID)
 	{
 	case WM_KEYUP:
+	case WM_KEYDOWN:
+		if (m_pScene)
+		{
+			m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
+		}
 		switch (wParam)
 		{
 			/*‘F1’ 키를 누르면 1인칭 카메라, ‘F2’ 키를 누르면 스페이스-쉽 카메라로 변경한다, ‘F3’ 키를 누르면 3인칭 카메라
@@ -528,8 +638,7 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 		case VK_F1:
 		case VK_F2:
 		case VK_F3:
-			if (m_pPlayer) m_pCamera = m_pPlayer->ChangeCamera((wParam - VK_F1 + 1),
-				m_GameTimer.GetTimeElapsed());
+
 			break;
 		case VK_ESCAPE:
 			::PostQuitMessage(0);
@@ -577,58 +686,14 @@ LRESULT CALLBACK CGameFramework::OnProcessingWindowMessage(HWND hWnd, UINT nMess
 	return(0);
 }
 
+void CGameFramework::PreviousTransform()
+{
+	m_pScene->PreviousTransform();
+}
+
 void CGameFramework::ProcessInput()
 {
-	static UCHAR pKeyBuffer[256];
-	DWORD dwDirection = 0;
-	/*키보드의 상태 정보를 반환한다. 화살표 키(‘→’, ‘←’, ‘↑’, ‘↓’)를 누르면 플레이어를 오른쪽/왼쪽(로컬 x-축), 앞/
-   뒤(로컬 z-축)로 이동한다. ‘Page Up’과 ‘Page Down’ 키를 누르면 플레이어를 위/아래(로컬 y-축)로 이동한다.*/
-	if (::GetKeyboardState(pKeyBuffer))
-	{
-		if (pKeyBuffer[VK_UP] & 0xF0) dwDirection |= DIR_FORWARD;
-		if (pKeyBuffer[VK_DOWN] & 0xF0) dwDirection |= DIR_BACKWARD;
-		if (pKeyBuffer[VK_LEFT] & 0xF0) dwDirection |= DIR_LEFT;
-		if (pKeyBuffer[VK_RIGHT] & 0xF0) dwDirection |= DIR_RIGHT;
-		if (pKeyBuffer[VK_PRIOR] & 0xF0) dwDirection |= DIR_UP;
-		if (pKeyBuffer[VK_NEXT] & 0xF0) dwDirection |= DIR_DOWN;
-	}
-	float cxDelta = 0.0f, cyDelta = 0.0f;
-	POINT ptCursorPos;
-	/*마우스를 캡쳐했으면 마우스가 얼마만큼 이동하였는 가를 계산한다. 마우스 왼쪽 또는 오른쪽 버튼이 눌러질 때의
-   메시지(WM_LBUTTONDOWN, WM_RBUTTONDOWN)를 처리할 때 마우스를 캡쳐하였다. 그러므로 마우스가 캡쳐된
-   것은 마우스 버튼이 눌려진 상태를 의미한다. 마우스 버튼이 눌려진 상태에서 마우스를 좌우 또는 상하로 움직이면 플
-   레이어를 x-축 또는 y-축으로 회전한다.*/
-	if (::GetCapture() == m_hWnd)
-	{
-		//마우스 커서를 화면에서 없앤다(보이지 않게 한다).
-		::SetCursor(NULL);
-		//현재 마우스 커서의 위치를 가져온다.
-		::GetCursorPos(&ptCursorPos);
-		//마우스 버튼이 눌린 상태에서 마우스가 움직인 양을 구한다.
-		cxDelta = (float)(ptCursorPos.x - m_ptOldCursorPos.x) / 3.0f;
-		cyDelta = (float)(ptCursorPos.y - m_ptOldCursorPos.y) / 3.0f;
-		//마우스 커서의 위치를 마우스가 눌려졌던 위치로 설정한다.
-		::SetCursorPos(m_ptOldCursorPos.x, m_ptOldCursorPos.y);
-	}
-	//마우스 또는 키 입력이 있으면 플레이어를 이동하거나(dwDirection) 회전한다(cxDelta 또는 cyDelta).
-	if ((dwDirection != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
-	{
-		if (cxDelta || cyDelta)
-		{
-			/*cxDelta는 y-축의 회전을 나타내고 cyDelta는 x-축의 회전을 나타낸다. 오른쪽 마우스 버튼이 눌려진 경우
-		   cxDelta는 z-축의 회전을 나타낸다.*/
-			if (pKeyBuffer[VK_RBUTTON] & 0xF0)
-				m_pPlayer->Rotate(cyDelta, 0.0f, -cxDelta);
-			else
-				m_pPlayer->Rotate(cyDelta, cxDelta, 0.0f);
-		}
-		/*플레이어를 dwDirection 방향으로 이동한다(실제로는 속도 벡터를 변경한다). 이동 거리는 시간에 비례하도록 한다.
-		플레이어의 이동 속력은 (50/초)로 가정한다.*/
-		if (dwDirection) m_pPlayer->Move(dwDirection, 50.0f * m_GameTimer.GetTimeElapsed(), true);
-	}
-	//플레이어를 실제로 이동하고 카메라를 갱신한다. 중력과 마찰력의 영향을 속도 벡터에 적용한다. ==> Update는 따로 빼야할 것 같지만 Input 안에 넣어둔 이유는 입력이후에 update하는 것을 보다
-	//직관적으로 하기 위해서
-	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
+	m_pScene->ProcessInput();
 }
 
 void CGameFramework::AnimateObjects()
@@ -684,52 +749,63 @@ void CGameFramework::MoveToNextFrame()
 
 }
 
+//GUI 입력
+void CGameFramework::GUIProcess()
+{
+	
+	// 공통 ImGui 프레임 시작
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	// Scene이 존재한다면 Scene의 GUI 호출
+	if (m_pScene)
+	{
+		m_pScene->OnGUI(&m_io); 
+	}
+
+}
+
 //Frame 동작 처리해주는 함수
 void CGameFramework::FrameAdvance()
 {
 	//프레임 레이트 제한을 거는 것
-	m_GameTimer.Tick(60.0f);
+	m_GameTimer.Tick(120.0f);
 
-	ProcessInput();
+	if (CSceneManager::GetInstance().GetChangeNum() != 0) //0이 아니면 ReBuild
+	{
+		ReBuildObject();
+		CSceneManager::GetInstance().NotifySceneStuck();
+	}
 
-	AnimateObjects();
+	PreviousTransform(); //이전 위치값등을 저장
+
+	ProcessInput(); //입력 제어
+
+	AnimateObjects(); // 움직임 제어
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator.Get(), NULL);
 	// 명령어를 프레임 시작시 모두 초기화 시켜준다. 오류를 방지하기 위해서
 
-	D3D12_RESOURCE_BARRIER d3dResourceBarrier;	// 리소스 베리어를 생성
-	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
-	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;	//리소스의 상태를 변환할 것이다.
-	d3dResourceBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;	//None
-	d3dResourceBarrier.Transition.pResource =
-		m_ppd3dRenderTargetBuffers[m_nSwapChainBufferIndex].Get();	//변환 시킬  리소스는 렌더 타겟이다.
-	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;	//변환 시키기 전엔 PRESENT 상태
-	//상태는 명시적으로 변환시키기 않는 이상 Direct12에서는 항상 그 상태를 유지함으로 반복되는 Frame에 대하여 항상
-	//상태전이를 신경써줘야 한다.
-	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;	//변환 시킨 이후엔 RENDER TARGET
-	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;	//모든 서브리소스들 상태 전환
-	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);	//이 상태에 대하여 GPU 명령 리스트에 리소스 베리어 설정
-	/*
-	* 리소스 베리어는 각각의 리소스들의 상태들을 어떠한 목적으로 사용할지 명시적으로 제어하여
-	* 문제가 발생할 만한 일을 방지하기 위하여 설정하는 것.
-	* 좀 더 자세히 말하면 리소스들이 복사, 읽기, 쓰기 등등 여러 상태가 존재하고
-	* 그 상태 처리를 알맞게 처리하기 위해서 리소스를 변환시키는 것에 대한
-	* 정보를 GPU 에게 전달하는 것을 명시하기 위한 것이라고 보면 된다.
-	* 이것에 대한건 컴퓨터 전공자라면 어떤 늬앙스인지 알 것이다.
-	*/
+	::SynchronizeResourceTransition(m_pd3dCommandList.Get(), m_ppd3dRenderTargetBuffers[m_nSwapChainBufferIndex].Get()
+	, D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
 	//m_pd3dCommandList->RSSetViewports(1,&m_d3dViewport);	//Viewport를 RS 단계에 전달
 	//m_pd3dCommandList->RSSetScissorRects(1,&m_d3dScissorRect);	// 시져 사각형 또한 전달
 
-	D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvDescriptorHandle =
-		m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	d3dRtvDescriptorHandle.ptr += (m_nRtvDescriptorIncrementSize * m_nSwapChainBufferIndex);
+	/*
+	* TODO:: 
+	* 여기 아래에 있는 저 RTV는 삭제해도 무방. 사용안함 아니 겹쳐.
+	*/
+	//D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvDescriptorHandle =
+	//	m_pd3dRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//d3dRtvDescriptorHandle.ptr += (::gnRtvDescriptorIncrementSize * m_nSwapChainBufferIndex);
 	//현재 사용할 렌더 타겟에 해당하는 서술자 핸들을 계산
 
-	float pfClearColor[4] = { 0.0f,0.0f,0.0f,1.0f };
-	m_pd3dCommandList->ClearRenderTargetView(d3dRtvDescriptorHandle, pfClearColor,
-		0, NULL);
+	//float pfClearColor[4] = { 0.0f,0.0f,0.0f,1.0f };
+	//m_pd3dCommandList->ClearRenderTargetView(d3dRtvDescriptorHandle, pfClearColor,
+	//	0, NULL);
 	//원하는 색상으로 렌더 타겟(뷰)를 지운다.
 
 	//깊이 스텐실 버퍼를 초기화 해준다.
@@ -740,13 +816,28 @@ void CGameFramework::FrameAdvance()
 
 	//OM 단계 최종적으로 후면버퍼에 그려주는 단계 여기서 Blending과 깊이 테스트를 처리하지만 셰이더 코드에서
 	//PS 단계에서 OM 단계 이전에 깊이 테스트를 처리하는 경우 또한 존재한다.
-	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvDescriptorHandle, TRUE, &d3dDsvDescriptorHandle);
+	//m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvDescriptorHandle, TRUE, &d3dDsvDescriptorHandle);
 
 	/*
 	* 이쪽 사이에 Render 처리를 실행할 것이다.
 	*/
 	//if (m_pScene) m_pScene->Render(m_pd3dCommandList.Get());	//Render를 처리한다
-	if (m_pScene) m_pScene->Render(m_pd3dCommandList.Get(), m_pCamera);	//Render를 처리한다
+	if (m_pScene)
+	{
+		
+		m_pScene->OnPreRender(m_pd3dCommandList.Get(), 1, &m_pd3dRTVCPUHandles[m_nSwapChainBufferIndex], &d3dDsvDescriptorHandle, m_pCamera);
+		m_pScene->Render(m_pd3dCommandList.Get(), m_pCamera);	//Render를 처리한다
+		m_pScene->OnPostRender(m_pd3dCommandList.Get(), 1, &m_pd3dRTVCPUHandles[m_nSwapChainBufferIndex], &d3dDsvDescriptorHandle, m_pCamera);
+	}
+
+	GUIProcess(); //
+
+	ImGui::Render();
+	ID3D12DescriptorHeap* heaps[] = { m_ImGuiSRVDescriptorHeap.Get() };
+	m_pd3dCommandList->SetDescriptorHeaps(_countof(heaps), heaps);
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), m_pd3dCommandList.Get());
+
+
 
 	//3인칭 카메라일 때 플레이어가 항상 보이도록 렌더링한다.
 #ifdef _WITH_PLAYER_TOP
@@ -755,13 +846,12 @@ void CGameFramework::FrameAdvance()
 		D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 #endif
 	//3인칭 카메라일 때 플레이어를 렌더링한다.
-	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList.Get(), m_pCamera);
+	//if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList.Get(), m_pCamera);
 
 	//Render가 끝나면 화면에 SwapChain을 Present해야 함으로 상태를 다시 PRESNET로 전환
-	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	m_pd3dCommandList->ResourceBarrier(1, &d3dResourceBarrier);	//이 상태에 대하여 GPU 명령 리스트에 리소스 베리어 설정
+	
+	::SynchronizeResourceTransition(m_pd3dCommandList.Get(), m_ppd3dRenderTargetBuffers[m_nSwapChainBufferIndex].Get()
+		, D3D12_RESOURCE_STATE_RENDER_TARGET,D3D12_RESOURCE_STATE_PRESENT);
 
 	hResult = m_pd3dCommandList->Close();	//이제 실제 모든 명령어가 작동할려면 Close 상태여야 한다.
 
@@ -782,9 +872,7 @@ void CGameFramework::FrameAdvance()
 	dxgiPresnetParameters.pScrollRect = NULL;
 	m_pdxgiSwapChain->Present1(1,0, &dxgiPresnetParameters);	//최종적으로 SwapChain을 통해서 후면버퍼를 실제 화면에 보여준다.
 
-
 	m_nSwapChainBufferIndex = m_pdxgiSwapChain->GetCurrentBackBufferIndex();
-
 	*/
 	m_pdxgiSwapChain->Present(0, 0);
 
@@ -833,8 +921,6 @@ void CGameFramework::ChangeSwapChainState()
 
 		CreateRenderTargetViews();
 	}
-
-
 }
 
 

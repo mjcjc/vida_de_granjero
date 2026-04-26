@@ -1,24 +1,33 @@
 #pragma once
 #include "stdafx.h"
 #include "GameTimer.h"
+#include "SceneManager.h"
 #include "Scene.h"
+#include "MainScene.h"
+#include "StartScene.h"
 #include "Camera.h"
 #include "Player.h"
+#include "GraphicsCommon.h";
+#include "ClientNetwork.h";
 
 class CGameFramework
 {
 public:
 	CGameFramework();
 	~CGameFramework();
-	CCamera* m_pCamera = NULL;
-	CPlayer* m_pPlayer = NULL;
+	/*CCamera* m_pCamera = NULL;
+	CPlayer* m_pPlayer = NULL;*/
 
 	//마우스 클릭할 때의 마우스 커서의 위치
 	POINT m_ptOldCursorPos;
 
+private:
+	std::unique_ptr<ClientNetwork> m_ClientNetwork;
 private: //시간관련된 클래스의 선언자
 	//시간 관리 클래스 인스턴스 선언
 	CGameTimer m_GameTimer;
+
+	CCamera* m_pCamera = NULL; //카메라
 
 	CScene* m_pScene;	//여러개의 씬을 만들거나 혹은 그럴것을 염두해두고 있기에
 	//포인터로 지정해서 리소스 해제를 중요시 해야 한다. 그리고 스마트 포인터를 쓰지 않는 이유는
@@ -26,6 +35,7 @@ private: //시간관련된 클래스의 선언자
 	//추가로 나중에 Scene_manager란걸 만들어 Scene 템플릿을 공유하는 여러 Scene들을 넘겨가면서
 	//조절하는 구조를 구성할 계획이다. 이 구조는 Unity와 언리얼 엔진의 코드를 참고해서 구성할 계획
 
+	
 
 
 	//윈도우 창에 띄우기 위하여 유니코드로 변환 시키는 것.
@@ -49,12 +59,13 @@ private:
 
 	ComPtr<ID3D12Resource>	m_ppd3dRenderTargetBuffers[m_nSwapChainBuffers];
 	ComPtr<ID3D12DescriptorHeap>	m_pd3dRtvDescriptorHeap;
-	UINT	m_nRtvDescriptorIncrementSize;
+	D3D12_CPU_DESCRIPTOR_HANDLE		m_pd3dRTVCPUHandles[m_nSwapChainBuffers];
+	//UINT	m_nRtvDescriptorIncrementSize;
 	//렌더 타겟 버퍼, 서술자 힙 인터페이스 포인터, 렌더 타겟 서술자 원소의 크기.
 
 	ComPtr<ID3D12Resource> m_pd3dDepthStencilBuffer;
 	ComPtr<ID3D12DescriptorHeap>	m_pd3dDsvDescriptorHeap;
-	UINT m_nDsvDescriptorIncrementSize;
+	//UINT m_nDsvDescriptorIncrementSize;
 	//깊이-스텐실 버퍼, 서술자 힙 인터페이스 포인터, 깊이-스텐실 서술자 원소의 크기.
 
 	ComPtr<ID3D12CommandQueue>	m_pd3dCommandQueue;	//GPU 명령어를 저장할 Queue
@@ -76,12 +87,22 @@ private:
 	//D3D12_RECT m_d3dScissorRect;
 	//Direct12의 뷰포트와 씨져 사각형
 
+
+	ComPtr<ID3D12DescriptorHeap> m_ImGuiSRVDescriptorHeap;
+
+	ImGuiIO m_io;
+
 public:
 	bool	OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	//프레임 워크를 초기화해주는 함수(주 윈도우가 생성되면 한 번 호출)
 
 	void OnDestroy();
 	//프레임 워크가 종료될때 모든 객체를 삭제해주는 부분.
+
+	//ImGui 초기화 정리 함수
+	void InitImGui();
+
+	
 
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
@@ -97,10 +118,14 @@ public:
 	void ReleaseObjects();
 	//렌더링할 메쉬와 게임 객체를 생성하고 소멸하는 함수.
 
+	//Scene이 넘어갈때 호출되는 함수
+	void ReBuildObject();
 
+	void PreviousTransform(); //이전 프레임에 동작등을 저장처리할 함수
 	void ProcessInput();	// 사용자 입력 처리 (마우스, 키보드)
 	void AnimateObjects(); // 게임 객체 애니메이션 (동작 처리 여기서 충돌 처리, 애니메이션 전부 처리)
 	void FrameAdvance();	// 프레임 단위로 모든 동작을 처리하는데 사용할 부분 Animation 다음 Render를 처리한다.
+	void GUIProcess();
 
 	void WaitForGpuComplete();
 	// CPU와 GPU 를 동기화 해주는 함수 ==> CommandList는 Queue에 저장되서 순차적으로 GPU에서 리소스를 사용한다.

@@ -1,3 +1,6 @@
+# -----------------------------
+# Common
+# -----------------------------
 # Prerequisites
 *.d
 
@@ -24,9 +27,57 @@
 *.lai
 *.la
 *.a
-*.lib
+# *.lib  ← (주의) 필요 시 커밋해야 하면 이 줄을 주석 처리하거나 예외 규칙 추가
 
 # Executables
 *.exe
 *.out
 *.app
+
+
+# -----------------------------
+# Visual Studio / MSVC 전용
+# -----------------------------
+# VS 로컬 캐시 및 설정
+.vs/
+*.suo
+*.user
+*.VC.db
+*.opendb
+
+# IntelliSense / PCH / PDB / ILK / 캐시 파일
+*.ipch
+*.iobj
+*.ipdb
+*.pdb
+*.ilk
+
+# 빌드 산출물 폴더
+[Bb]uild/
+x64/
+x86/
+ARM/
+ARM64/
+[Ww][Ii][Nn]32/
+Debug/
+Release/
+RelWithDebInfo/
+MinSizeRel/
+
+# 중간/로그/캐시
+*.tlog
+*.log
+*.lastbuildstate
+*.cache
+*.tmp
+
+# CMake(쓰는 경우)
+CMakeFiles/
+CMakeCache.txt
+cmake-build*/
+build*/
+
+# 기타 개발 툴 관련
+*.psess
+*.vsp
+*.vspx

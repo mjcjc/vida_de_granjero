@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "ServerPacketHandler.h"
 #include "../Scene.h"
 #include "../GameFramework.h"
@@ -12,12 +12,14 @@ class CScene;
 class CStartScene;
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
-// Á÷Á¢ ÄÁÅÙÃ÷ ÀÛ¾÷ÀÚ
+// ì§ì ‘ ì»¨í…ì¸  ì‘ì—…ì
 UINT GMyServerPlayerId = 0;
 bool StartFlagForServer = false;
 bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 {
-	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+	PacketHeader header{};
+	if (buffer != nullptr && len >= static_cast<int32>(sizeof(PacketHeader)))
+		::memcpy(&header, buffer, sizeof(header));
 	// TODO : Log
 	return false;
 }
@@ -30,10 +32,10 @@ bool Handle_S_LOGIN(PacketSessionRef& session, Protocol::S_LOGIN& pkt)
 
 	if (pkt.players().size() == 0)
 	{
-		// Ä³¸¯ÅÍ »ı¼ºÃ¢
+		// ìºë¦­í„° ìƒì„±ì°½
 	}
 	GMyServerPlayerId = pkt.players(0).id();
-	// ÀÔÀå UI ¹öÆ° ´­·¯¼­ °ÔÀÓ ÀÔÀå
+	// ì…ì¥ UI ë²„íŠ¼ ëˆŒëŸ¬ì„œ ê²Œì„ ì…ì¥
 
 	return true;
 }
@@ -46,8 +48,8 @@ bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt)
 
 	uint64 id = pkt.playerid();
 
-	// 1) ³» ID°¡ ¾ÆÁ÷ ¾øÀ¸¸é "³» ID ÈÄº¸"·Î ¸ÕÀú Àâ´Â´Ù
-	//    (´ëºÎºĞ ¼­¹ö°¡ ³» ¼¼¼Ç¿¡ ¸ÕÀú º¸³»¹Ç·Î Àß ¸ÂÀ½)
+	// 1) ë‚´ IDê°€ ì•„ì§ ì—†ìœ¼ë©´ "ë‚´ ID í›„ë³´"ë¡œ ë¨¼ì € ì¡ëŠ”ë‹¤
+	//    (ëŒ€ë¶€ë¶„ ì„œë²„ê°€ ë‚´ ì„¸ì…˜ì— ë¨¼ì € ë³´ë‚´ë¯€ë¡œ ì˜ ë§ìŒ)
 	if (GMyServerPlayerId == 0)
 	{
 		GMyServerPlayerId = id;
@@ -58,11 +60,11 @@ bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt)
 		return true;
 	}
 
-	// 2) ³» ID¸é ½ºÆù ±İÁö
+	// 2) ë‚´ IDë©´ ìŠ¤í° ê¸ˆì§€
 	if (id == GMyServerPlayerId)
 		return true;
 
-	// 3) ÀÌ¹Ì ÀÖÀ¸¸é ½ºÅµ
+	// 3) ì´ë¯¸ ìˆìœ¼ë©´ ìŠ¤í‚µ
 	for (int i = 0; i < scene->m_nHierarchicalGameObjects; i++)
 	{
 		if (scene->m_ppHierarchicalGameObjects[i] &&
@@ -70,7 +72,7 @@ bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt)
 			return true;
 	}
 
-	// 4) ´Ù¸¥ »ç¶÷ ½ºÆù
+	// 4) ë‹¤ë¥¸ ì‚¬ëŒ ìŠ¤í°
 	scene->SpawnAnimateObject(
 		scene->m_WoodManObjectPool,
 		scene->m_pWoodManModel,
@@ -123,7 +125,7 @@ bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt)
 //		const auto& p = pkt.other(i);
 //		uint64 serverId = p.id();
 //
-//		// ÀÌ¹Ì ÀÖÀ¸¸é ½ºÅµ
+//		// ì´ë¯¸ ìˆìœ¼ë©´ ìŠ¤í‚µ
 //		if (scene->FindObjectByServerID(serverId))
 //			continue;
 //
@@ -131,10 +133,10 @@ bool Handle_S_ENTER_GAME(PacketSessionRef& session, Protocol::S_ENTER_GAME& pkt)
 //			scene->m_AnimatedObjectPool,
 //			scene->m_pWoodManModel,
 //			EObjectTag::Player,
-//			scene->m_nIDPool++,   // ·ÎÄÃID´Â º°µµ·Î
+//			scene->m_nIDPool++,   // ë¡œì»¬IDëŠ” ë³„ë„ë¡œ
 //			2);
 //
-//		obj->SetID(serverId);          // ¼­¹öID´Â µû·Î ÀúÀå
+//		obj->SetID(serverId);          // ì„œë²„IDëŠ” ë”°ë¡œ ì €ì¥
 //		//obj->ApplyProtoTransform(p.transform());
 //	}
 //	return true;
@@ -143,12 +145,12 @@ bool Handle_S_OTHER(PacketSessionRef& session, Protocol::S_OTHER& pkt)
 {
 	auto* scene = dynamic_cast<CMainScene*>(CSceneManager::GetInstance().GetTopScene());
 	if (!scene) return true;
-	//cout << "´Ù¸¥ Å¬¶ó ¼ö" << pkt.other_size() << endl;
+	//cout << "ë‹¤ë¥¸ í´ë¼ ìˆ˜" << pkt.other_size() << endl;
 	for (int i = 0; i < pkt.other_size(); ++i)
 	{
 		const auto& p = pkt.other(i);
 		uint64 serverId = p.id();
-		//cout << "´Ù¸¥ Å¬¶ó ¾ÆÀÌµğ" << serverId << endl;
+		//cout << "ë‹¤ë¥¸ í´ë¼ ì•„ì´ë””" << serverId << endl;
 		if (scene->FindObjectByServerID(serverId))
 			continue;
 
@@ -163,15 +165,15 @@ bool Handle_S_OTHER(PacketSessionRef& session, Protocol::S_OTHER& pkt)
 		obj->SetPosition(t.px(), t.py(), t.pz());
 		obj->SetQuaternion(XMFLOAT4(t.qx(), t.qy(), t.qz(), t.qw()));
 
-		// (¼±ÅÃ) Áï½Ã ¿ùµå °»½ÅÀÌ ÇÊ¿äÇÏ¸é:
-		// obj->UpdateTransform(nullptr);  // Shader ±¸Á¶¿¡ µû¶ó ÇÊ¿ä/ºÒÇÊ¿ä
+		// (ì„ íƒ) ì¦‰ì‹œ ì›”ë“œ ê°±ì‹ ì´ í•„ìš”í•˜ë©´:
+		// obj->UpdateTransform(nullptr);  // Shader êµ¬ì¡°ì— ë”°ë¼ í•„ìš”/ë¶ˆí•„ìš”
 	}
 	return true;
 }
 bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt)
 {
-	/*cout << "Å¬¶ó ¹øÈ£" << GMyServerPlayerId << endl;
-	cout << "ÀÌ°Ç ¼­¹ö" << pkt.playerid() << endl;*/
+	/*cout << "í´ë¼ ë²ˆí˜¸" << GMyServerPlayerId << endl;
+	cout << "ì´ê±´ ì„œë²„" << pkt.playerid() << endl;*/
 	/*std::cout << "[CLIENT] S_MOVE recv id=" << pkt.playerid()
 		<< " pos=(" << pkt.player().transform().px() << ", "
 		<< pkt.player().transform().py() << ", "
@@ -189,34 +191,39 @@ bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt)
 	auto* scene = dynamic_cast<CMainScene*>(base);
 	if (!scene) return true;
 
+	if (pkt.playerid() == GMyServerPlayerId)
+	{
+		if (!scene->m_pPlayer)
+			return true;
+
+		const auto& serverTransform = pkt.player().transform();
+		const XMFLOAT3 authoritativePosition(
+			serverTransform.px(), serverTransform.py(), serverTransform.pz());
+		scene->ReconcileLocalPlayer(scene->m_pPlayer, authoritativePosition,
+			pkt.last_processed_sequence());
+		return true;
+	}
+
 	CGameObject* target = scene->FindObjectByServerID(pkt.playerid());
 	if (!target) return true;
 
-	if (pkt.playerid() == GMyServerPlayerId)
-		return true; // ³» Ä³¸¯ÅÍ´Â ¼­¹ö À§Ä¡·Î µ¤¾î¾²¸é Á¶ÀÛ°¨/¿¹Ãø ±úÁú ¼ö ÀÖÀ½
-
 	const auto& t = pkt.player().transform();
-	target->m_nAnimation = (int)pkt.player().state(); // ¸ÕÀú »óÅÂ ÀúÀå(¼±ÅÃ)
-
-	if (auto* anim = dynamic_cast<CAnimatedObject*>(target))
-	{
-		anim->SetAnimationState((EAnimationState)pkt.player().state());
-	}
-	target->SetPosition(t.px(), t.py(), t.pz());
-	target->SetQuaternion(XMFLOAT4(t.qx(), t.qy(), t.qz(), t.qw()));
-	// (¼±ÅÃ) ¼ø°£ÀÌµ¿ÀÌ Æ¢¸é º¸°£(Lerp) Ã³¸®
-	// XMFLOAT3 cur = target->GetPosition();
-	// XMFLOAT3 next = Lerp(cur, {t.px(), t.py(), t.pz()}, 0.2f);
-	// target->SetPosition(next);
+	RemoteMovementSnapshot snapshot;
+	snapshot.arrivalTimeMs = ::GetTickCount64();
+	snapshot.serverTick = pkt.server_tick();
+	snapshot.position = XMFLOAT3(t.px(), t.py(), t.pz());
+	snapshot.rotation = XMFLOAT4(t.qx(), t.qy(), t.qz(), t.qw());
+	snapshot.state = pkt.player().state();
+	scene->QueueRemoteMovementSnapshot(pkt.playerid(), snapshot);
 
 	return true;
 }
 
-// S_MOVE: Æ¯Á¤ ¿ÀºêÁ§Æ®ÀÇ Transform ¾÷µ¥ÀÌÆ®
+// S_MOVE: íŠ¹ì • ì˜¤ë¸Œì íŠ¸ì˜ Transform ì—…ë°ì´íŠ¸
 //bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt)
 //{
-//	cout << "Å¬¶ó ¹øÈ£" << GMyServerPlayerId << endl;
-//	cout << "ÀÌ°Ç ¼­¹ö" << pkt.playerid() << endl;
+//	cout << "í´ë¼ ë²ˆí˜¸" << GMyServerPlayerId << endl;
+//	cout << "ì´ê±´ ì„œë²„" << pkt.playerid() << endl;
 //	std::cout << "[CLIENT] S_MOVE recv id=" << pkt.playerid()
 //		<< " pos=(" << pkt.player().transform().px() << ", "
 //		<< pkt.player().transform().py() << ", "
@@ -268,13 +275,13 @@ bool Handle_S_OBJECTSPAWN(PacketSessionRef& session, Protocol::S_OBJECTSPAWN& pk
 
 	//WRITE_LOCK
 
-	// ÀÌ¹Ì ÀÖÀ¸¸é Áßº¹ ½ºÆù ¹æÁö
+	// ì´ë¯¸ ìˆìœ¼ë©´ ì¤‘ë³µ ìŠ¤í° ë°©ì§€
 	if (scene->FindObjectByServerID(objId))
 	{
 		return true;
 	}
-	//cout << "¿ÀºêÁ§Æ® ½ºÆù Å¸ÀÔ" << pkt.model_type() << endl;
-	// model_type¿¡ µû¶ó ¾î¶² ¸ğµ¨/Ç®À» ¾µÁö ¼±ÅÃ
+	//cout << "ì˜¤ë¸Œì íŠ¸ ìŠ¤í° íƒ€ì…" << pkt.model_type() << endl;
+	// model_typeì— ë”°ë¼ ì–´ë–¤ ëª¨ë¸/í’€ì„ ì“¸ì§€ ì„ íƒ
 	CLoadedModelInfo* model = nullptr;
 	EObjectTag tag = EObjectTag::Environment;
 	CGameObject* obj = nullptr;
@@ -342,7 +349,7 @@ bool Handle_S_OBJECTSPAWN(PacketSessionRef& session, Protocol::S_OBJECTSPAWN& pk
 	obj->SetPosition(pkt.transform().px(), pkt.transform().py(), pkt.transform().pz());
 	obj->SetQuaternion(XMFLOAT4(pkt.transform().qx(), pkt.transform().qy(), pkt.transform().qz(), pkt.transform().qw()));
 
-	//cout << "¿ÀºêÁ§Æ® À§Ä¡ ¼³Á¤ ¿Ï·á" << endl;
+	//cout << "ì˜¤ë¸Œì íŠ¸ ìœ„ì¹˜ ì„¤ì • ì™„ë£Œ" << endl;
 	return true;
 }
 
@@ -385,7 +392,7 @@ bool Handle_S_WORLD_INIT(PacketSessionRef& session, Protocol::S_WORLD_INIT& pkt)
 bool Handle_S_OBJECT_DESPAWN(PacketSessionRef& session, Protocol::S_OBJECT_DESPAWN& pkt)
 {
 	//std::cout << "[Handle_S_OBJECT_DESPAWN] id=" << pkt.object_id() ;
-	//std::cout << " Áö±İ hp " << pkt.hp()<<endl;
+	//std::cout << " ì§€ê¸ˆ hp " << pkt.hp()<<endl;
 	auto* scene = dynamic_cast<CMainScene*>(CSceneManager::GetInstance().GetTopScene());
 	if (!scene) {
 		//std::cout << "[Handle_S_OBJECT_DESPAWN] scene null. top scene is not MainScene\n";
@@ -487,7 +494,7 @@ bool Handle_S_SEEDGROWTH(PacketSessionRef& session, Protocol::S_SEEDGROWTH& pkt)
 	uint64 objId = pkt.object_id();
 	CGameObject* obj = scene->FindObjectByServerID(objId);
 	if (!obj) return true;
-	//cout << "X°ª: " << obj->GetPosition().x << " Y°ª: " << obj->GetPosition().y << " Z°ª: " << obj->GetPosition().z << endl;
+	//cout << "Xê°’: " << obj->GetPosition().x << " Yê°’: " << obj->GetPosition().y << " Zê°’: " << obj->GetPosition().z << endl;
 	
 	if (auto* crop = dynamic_cast<CCropObject*>(obj))
 	{

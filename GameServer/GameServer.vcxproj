@@ -108,7 +108,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>CALL $(SolutionDir)Common\Protobuf\bin\GenPackets.bat</Command>
+      <Command>CALL "$(SolutionDir)Common\Protobuf\bin\GenPackets.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -129,7 +129,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PreBuildEvent>
-      <Command>CALL $(SolutionDir)Common\Protobuf\bin\GenPackets.bat</Command>
+      <Command>CALL "$(SolutionDir)Common\Protobuf\bin\GenPackets.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,7 +150,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libraries\Libs\vs14;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>CALL $(SolutionDir)Common\Protobuf\bin\GenPackets.bat</Command>
+      <Command>CALL "$(SolutionDir)Common\Protobuf\bin\GenPackets.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -176,7 +176,7 @@
       <AdditionalLibraryDirectories>$(SolutionDir)Libraries\Libs\vs14;$(SolutionDir)Libraries\Libs\Protobuf\Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
     <PreBuildEvent>
-      <Command>CALL $(SolutionDir)Common\Protobuf\bin\GenPackets.bat</Command>
+      <Command>CALL "$(SolutionDir)Common\Protobuf\bin\GenPackets.bat"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -205,6 +205,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="ServerNavigation.cpp" />
     <ClCompile Include="Struct.pb.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -225,6 +226,7 @@
     <ClInclude Include="ServerPlayer.h" />
     <ClInclude Include="ClientPacketHandler.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="ServerNavigation.h" />
     <ClInclude Include="Struct.pb.h" />
     <ClInclude Include="WeatherWeight.h" />
     <ClInclude Include="EnvironmentTypes.h" />

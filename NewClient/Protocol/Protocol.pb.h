@@ -978,6 +978,11 @@ class C_MOVE final :
   enum : int {
     kPlayerFieldNumber = 2,
     kPlayerIdFieldNumber = 1,
+    kSequenceFieldNumber = 3,
+    kClientTickFieldNumber = 4,
+    kInputXFieldNumber = 5,
+    kInputZFieldNumber = 6,
+    kDeltaTimeFieldNumber = 7,
   };
   // .Protocol.Player player = 2;
   bool has_player() const;
@@ -1006,6 +1011,51 @@ class C_MOVE final :
   void _internal_set_playerid(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // uint32 sequence = 3;
+  void clear_sequence();
+  ::PROTOBUF_NAMESPACE_ID::uint32 sequence() const;
+  void set_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_sequence() const;
+  void _internal_set_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 client_tick = 4;
+  void clear_client_tick();
+  ::PROTOBUF_NAMESPACE_ID::uint32 client_tick() const;
+  void set_client_tick(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_client_tick() const;
+  void _internal_set_client_tick(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // float input_x = 5;
+  void clear_input_x();
+  float input_x() const;
+  void set_input_x(float value);
+  private:
+  float _internal_input_x() const;
+  void _internal_set_input_x(float value);
+  public:
+
+  // float input_z = 6;
+  void clear_input_z();
+  float input_z() const;
+  void set_input_z(float value);
+  private:
+  float _internal_input_z() const;
+  void _internal_set_input_z(float value);
+  public:
+
+  // float delta_time = 7;
+  void clear_delta_time();
+  float delta_time() const;
+  void set_delta_time(float value);
+  private:
+  float _internal_delta_time() const;
+  void _internal_set_delta_time(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.C_MOVE)
  private:
   class _Internal;
@@ -1015,6 +1065,11 @@ class C_MOVE final :
   typedef void DestructorSkippable_;
   ::Protocol::Player* player_;
   ::PROTOBUF_NAMESPACE_ID::uint64 playerid_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 sequence_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 client_tick_;
+  float input_x_;
+  float input_z_;
+  float delta_time_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_Protocol_2eproto;
 };
@@ -1130,6 +1185,8 @@ class S_MOVE final :
   enum : int {
     kPlayerFieldNumber = 2,
     kPlayerIdFieldNumber = 1,
+    kLastProcessedSequenceFieldNumber = 3,
+    kServerTickFieldNumber = 4,
   };
   // .Protocol.Player player = 2;
   bool has_player() const;
@@ -1158,6 +1215,24 @@ class S_MOVE final :
   void _internal_set_playerid(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
+  // uint32 last_processed_sequence = 3;
+  void clear_last_processed_sequence();
+  ::PROTOBUF_NAMESPACE_ID::uint32 last_processed_sequence() const;
+  void set_last_processed_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_last_processed_sequence() const;
+  void _internal_set_last_processed_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
+  // uint32 server_tick = 4;
+  void clear_server_tick();
+  ::PROTOBUF_NAMESPACE_ID::uint32 server_tick() const;
+  void set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  private:
+  ::PROTOBUF_NAMESPACE_ID::uint32 _internal_server_tick() const;
+  void _internal_set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_MOVE)
  private:
   class _Internal;
@@ -1167,6 +1242,8 @@ class S_MOVE final :
   typedef void DestructorSkippable_;
   ::Protocol::Player* player_;
   ::PROTOBUF_NAMESPACE_ID::uint64 playerid_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 last_processed_sequence_;
+  ::PROTOBUF_NAMESPACE_ID::uint32 server_tick_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_Protocol_2eproto;
 };
@@ -3185,6 +3262,106 @@ inline void C_MOVE::set_allocated_player(::Protocol::Player* player) {
   // @@protoc_insertion_point(field_set_allocated:Protocol.C_MOVE.player)
 }
 
+// uint32 sequence = 3;
+inline void C_MOVE::clear_sequence() {
+  sequence_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 C_MOVE::_internal_sequence() const {
+  return sequence_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 C_MOVE::sequence() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.sequence)
+  return _internal_sequence();
+}
+inline void C_MOVE::_internal_set_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  sequence_ = value;
+}
+inline void C_MOVE::set_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_sequence(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.sequence)
+}
+
+// uint32 client_tick = 4;
+inline void C_MOVE::clear_client_tick() {
+  client_tick_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 C_MOVE::_internal_client_tick() const {
+  return client_tick_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 C_MOVE::client_tick() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.client_tick)
+  return _internal_client_tick();
+}
+inline void C_MOVE::_internal_set_client_tick(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  client_tick_ = value;
+}
+inline void C_MOVE::set_client_tick(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_client_tick(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.client_tick)
+}
+
+// float input_x = 5;
+inline void C_MOVE::clear_input_x() {
+  input_x_ = 0;
+}
+inline float C_MOVE::_internal_input_x() const {
+  return input_x_;
+}
+inline float C_MOVE::input_x() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.input_x)
+  return _internal_input_x();
+}
+inline void C_MOVE::_internal_set_input_x(float value) {
+  
+  input_x_ = value;
+}
+inline void C_MOVE::set_input_x(float value) {
+  _internal_set_input_x(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.input_x)
+}
+
+// float input_z = 6;
+inline void C_MOVE::clear_input_z() {
+  input_z_ = 0;
+}
+inline float C_MOVE::_internal_input_z() const {
+  return input_z_;
+}
+inline float C_MOVE::input_z() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.input_z)
+  return _internal_input_z();
+}
+inline void C_MOVE::_internal_set_input_z(float value) {
+  
+  input_z_ = value;
+}
+inline void C_MOVE::set_input_z(float value) {
+  _internal_set_input_z(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.input_z)
+}
+
+// float delta_time = 7;
+inline void C_MOVE::clear_delta_time() {
+  delta_time_ = 0;
+}
+inline float C_MOVE::_internal_delta_time() const {
+  return delta_time_;
+}
+inline float C_MOVE::delta_time() const {
+  // @@protoc_insertion_point(field_get:Protocol.C_MOVE.delta_time)
+  return _internal_delta_time();
+}
+inline void C_MOVE::_internal_set_delta_time(float value) {
+  
+  delta_time_ = value;
+}
+inline void C_MOVE::set_delta_time(float value) {
+  _internal_set_delta_time(value);
+  // @@protoc_insertion_point(field_set:Protocol.C_MOVE.delta_time)
+}
+
 // -------------------------------------------------------------------
 
 // S_MOVE
@@ -3286,6 +3463,46 @@ inline void S_MOVE::set_allocated_player(::Protocol::Player* player) {
   }
   player_ = player;
   // @@protoc_insertion_point(field_set_allocated:Protocol.S_MOVE.player)
+}
+
+// uint32 last_processed_sequence = 3;
+inline void S_MOVE::clear_last_processed_sequence() {
+  last_processed_sequence_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 S_MOVE::_internal_last_processed_sequence() const {
+  return last_processed_sequence_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 S_MOVE::last_processed_sequence() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MOVE.last_processed_sequence)
+  return _internal_last_processed_sequence();
+}
+inline void S_MOVE::_internal_set_last_processed_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  last_processed_sequence_ = value;
+}
+inline void S_MOVE::set_last_processed_sequence(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_last_processed_sequence(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MOVE.last_processed_sequence)
+}
+
+// uint32 server_tick = 4;
+inline void S_MOVE::clear_server_tick() {
+  server_tick_ = 0u;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 S_MOVE::_internal_server_tick() const {
+  return server_tick_;
+}
+inline ::PROTOBUF_NAMESPACE_ID::uint32 S_MOVE::server_tick() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MOVE.server_tick)
+  return _internal_server_tick();
+}
+inline void S_MOVE::_internal_set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  
+  server_tick_ = value;
+}
+inline void S_MOVE::set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value) {
+  _internal_set_server_tick(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MOVE.server_tick)
 }
 
 // -------------------------------------------------------------------

@@ -2,7 +2,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Animation.h"
-#include "ServerPacketHandler.h"
+#include "Protocol.pb.h"
 
 #define RESOURCE_TEXTURE2D			0x01
 #define RESOURCE_TEXTURE2D_ARRAY	0x02	//[]
@@ -650,6 +650,8 @@ public:
 
 	void SetAnimationState(EAnimationState State); //애니메이션에 현 상태를 받아와 반영하는 함수
 
+private:
+	int m_nAppliedAnimationState = -1;
 };
 
 ///////////////////////////////////////////////////////////////////////

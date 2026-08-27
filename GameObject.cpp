@@ -1861,6 +1861,11 @@ void CAnimatedObject::Init(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* 
 
 void CAnimatedObject::SetAnimationState(EAnimationState State)
 {
+	const int requestedState = static_cast<int>(State);
+	if (m_nAppliedAnimationState == requestedState)
+		return;
+	m_nAppliedAnimationState = requestedState;
+
 	switch (State)
 	{
 	case Idle:

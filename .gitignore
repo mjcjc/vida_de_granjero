@@ -70,6 +70,8 @@ MinSizeRel/
 *.lastbuildstate
 *.cache
 *.tmp
+*.utf8
+*.cp949
 
 # CMake(쓰는 경우)
 CMakeFiles/

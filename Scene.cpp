@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include"Protocol.pb.h"
 #include"ServerPacketHandler.h"
+#include "Player.h"
 CDescriptorHeap* CScene::m_pDescriptorHeap = NULL;
 
 CDescriptorHeap::CDescriptorHeap()
@@ -810,6 +811,80 @@ bool CScene::ProcessInput()
 //오브젝트의 애니메이션
 void CScene::AnimateObjects(float fTimeElapsed)
 {
+	{
+		std::lock_guard<std::mutex> guard(m_movementReconciliationMutex);
+		if (m_pMovementCorrectionTarget != nullptr)
+		{
+			const float correctionLengthSq =
+				m_movementCorrection.x * m_movementCorrection.x +
+				m_movementCorrection.y * m_movementCorrection.y +
+				m_movementCorrection.z * m_movementCorrection.z;
+			if (correctionLengthSq > 0.000001f)
+			{
+				const float rawBlend = 1.0f - std::exp(-12.0f * fTimeElapsed);
+				const float blend = rawBlend < 0.0f ? 0.0f : (rawBlend > 1.0f ? 1.0f : rawBlend);
+				XMFLOAT3 applied = {
+					m_movementCorrection.x * blend,
+					m_movementCorrection.y * blend,
+					m_movementCorrection.z * blend };
+				if (correctionLengthSq < 0.0001f)
+					applied = m_movementCorrection;
+
+				XMFLOAT3 position = m_pMovementCorrectionTarget->GetPosition();
+				position.x += applied.x;
+				position.y += applied.y;
+				position.z += applied.z;
+				m_pMovementCorrectionTarget->SetPosition(position.x, position.y, position.z);
+				m_movementCorrection.x -= applied.x;
+				m_movementCorrection.y -= applied.y;
+				m_movementCorrection.z -= applied.z;
+				m_lastPredictedMovePosition.x += applied.x;
+				m_lastPredictedMovePosition.y += applied.y;
+				m_lastPredictedMovePosition.z += applied.z;
+			}
+		}
+	}
+
+	CGameObject* airborneMoveObject = nullptr;
+	Protocol::PlayerState airborneMoveState = Protocol::PlayerState::IDLE;
+	float airbornePacketDelta = 0.0f;
+	{
+		std::lock_guard<std::mutex> guard(m_movementReconciliationMutex);
+		CFarmPlayer* farmPlayer = dynamic_cast<CFarmPlayer*>(m_pLastMovePacketObject);
+		if (farmPlayer != nullptr)
+		{
+			const bool isAirborne = !farmPlayer->m_bOnGround && !farmPlayer->m_bOnBuilding;
+			const uint64 nowMs = ::GetTickCount64();
+			const uint64 elapsedMs = m_lastMovePacketTimeMs == 0 ? 0 : nowMs - m_lastMovePacketTimeMs;
+			const bool landedSinceLastFrame = m_wasAirborneForNetwork && !isAirborne;
+			if ((isAirborne && elapsedMs >= 50) || landedSinceLastFrame)
+			{
+				airborneMoveObject = farmPlayer;
+				airborneMoveState = m_lastMovePacketState;
+				airbornePacketDelta = elapsedMs > 100 ? 0.1f : static_cast<float>(elapsedMs) / 1000.0f;
+			}
+			m_wasAirborneForNetwork = isAirborne;
+		}
+	}
+	if (airborneMoveObject != nullptr)
+	{
+		CPlayer* player = static_cast<CPlayer*>(airborneMoveObject);
+		XMFLOAT3 input = player->m_xmf3InputDir;
+		const float inputLength = std::sqrt(input.x * input.x + input.z * input.z);
+		if (inputLength > 0.001f)
+		{
+			input.x /= inputLength;
+			input.z /= inputLength;
+		}
+		else
+		{
+			input.x = 0.0f;
+			input.z = 0.0f;
+		}
+		SendObjectMoveToServer(airborneMoveObject, airborneMoveState,
+			input.x, input.z, airbornePacketDelta);
+	}
+
 	if (m_ppObjects)
 	{
 		for (int j = 0; j < m_nObjects; j++)
@@ -1154,7 +1229,8 @@ BoundingSphere LightControl::GetBoundingSphere()
 }
 
 
-void CScene::SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState state)
+void CScene::SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState state,
+	float inputX, float inputZ, float deltaTime)
 {
 
 	//std::cout << "[SendObjectMoveToServer] called" << std::endl;
@@ -1169,11 +1245,34 @@ void CScene::SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState sta
 		//std::cout << "  -> net == nullptr, return" << std::endl;
 		return;
 	}
+	std::lock_guard<std::mutex> guard(m_movementReconciliationMutex);
+	m_pLastMovePacketObject = pObj;
+	m_lastMovePacketState = state;
+	m_lastMovePacketTimeMs = ::GetTickCount64();
 
 	Protocol::C_MOVE pkt;
+	const uint32 sequence = m_nextMoveSequence++;
+	const XMFLOAT3 predictedPosition = pObj->GetPosition();
+	XMFLOAT3 predictedDelta = { 0.0f, 0.0f, 0.0f };
+	if (m_hasPredictedMovePosition)
+	{
+		predictedDelta.x = predictedPosition.x - m_lastPredictedMovePosition.x;
+		predictedDelta.y = predictedPosition.y - m_lastPredictedMovePosition.y;
+		predictedDelta.z = predictedPosition.z - m_lastPredictedMovePosition.z;
+	}
+	m_lastPredictedMovePosition = predictedPosition;
+	m_hasPredictedMovePosition = true;
+	m_pendingMoveInputs.push_back({ sequence, predictedDelta });
+
 	Protocol::Transform* trans = pkt.mutable_player()->mutable_transform();
 	pObj->FillProtoTransform(trans);
 	pkt.mutable_player()->set_state(state);
+	pkt.set_sequence(sequence);
+	pkt.set_client_tick(::GetTickCount());
+	pkt.set_input_x(inputX);
+	pkt.set_input_z(inputZ);
+	const float safeDeltaTime = deltaTime < 0.0f ? 0.0f : (deltaTime > 0.1f ? 0.1f : deltaTime);
+	pkt.set_delta_time(safeDeltaTime);
 
 	//std::cout << "STate" << pkt.mutable_player()->state() << std::endl;
 	// Fix for E1086: Ensure the correct usage of mutable_transform()  
@@ -1187,4 +1286,52 @@ void CScene::SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState sta
 	m_upClientNetwork->SendToServer(sendBuffer);
 
 	//std::cout << "  -> net->Broadcast() called\n";
+}
+
+void CScene::ReconcileLocalPlayer(CGameObject* pObj, const XMFLOAT3& serverPosition,
+	uint32 lastProcessedSequence)
+{
+	if (pObj == nullptr)
+		return;
+	std::lock_guard<std::mutex> guard(m_movementReconciliationMutex);
+
+	m_pendingMoveInputs.erase(
+		std::remove_if(m_pendingMoveInputs.begin(), m_pendingMoveInputs.end(),
+			[lastProcessedSequence](const PendingMoveInput& input)
+			{
+				return input.sequence <= lastProcessedSequence;
+			}),
+		m_pendingMoveInputs.end());
+
+	XMFLOAT3 reconciled = serverPosition;
+	for (const PendingMoveInput& input : m_pendingMoveInputs)
+	{
+		reconciled.x += input.predictedDelta.x;
+		reconciled.y += input.predictedDelta.y;
+		reconciled.z += input.predictedDelta.z;
+	}
+
+	const XMFLOAT3 currentPosition = pObj->GetPosition();
+	const XMFLOAT3 error = {
+		reconciled.x - currentPosition.x,
+		reconciled.y - currentPosition.y,
+		reconciled.z - currentPosition.z };
+	const float horizontalErrorSq = error.x * error.x + error.z * error.z;
+	const bool needsHardCorrection = horizontalErrorSq > 4.0f || std::fabs(error.y) > 2.0f;
+	if (needsHardCorrection)
+	{
+		if (CPlayer* player = dynamic_cast<CPlayer*>(pObj))
+			player->SetPosition(reconciled);
+		else
+			pObj->SetPosition(reconciled.x, reconciled.y, reconciled.z);
+		m_movementCorrection = { 0.0f, 0.0f, 0.0f };
+		m_lastPredictedMovePosition = reconciled;
+	}
+	else
+	{
+		m_pMovementCorrectionTarget = pObj;
+		m_movementCorrection = error;
+		m_lastPredictedMovePosition = currentPosition;
+	}
+	m_hasPredictedMovePosition = true;
 }

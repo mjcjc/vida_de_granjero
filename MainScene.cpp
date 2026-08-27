@@ -705,7 +705,7 @@ bool CMainScene::ProcessInput()
 	if (newState != m_lastSentState)
 	{
 		m_lastSentState = newState;
-		SendObjectMoveToServer(m_pPlayer, newState);
+		m_moveDirty = true;
 	}
 
 	//플레이어를 실제로 이동하고 카메라를 갱신한다. 중력과 마찰력의 영향을 속도 벡터에 적용한다. ==> Update는 따로 빼야할 것 같지만 Input 안에 넣어둔 이유는 입력이후에 update하는 것을 보다
@@ -1214,6 +1214,7 @@ void CMainScene::CropCheckWheather(float fTimeElapsed)
 
 void CMainScene::AnimateObjects(float fTimeElapsed)
 {
+	UpdateRemoteMovementInterpolation();
 	UpdateCropState();
 	m_fTime += fTimeElapsed;
 	m_fElapsedTime = fTimeElapsed;
@@ -1232,13 +1233,27 @@ void CMainScene::AnimateObjects(float fTimeElapsed)
 	//mjg-추가 애니메이션 땜에 했음.
 	m_moveSendAcc += m_pGameTimer->GetTimeElapsed(); // 이미 쓰는 elapsed
 
-	if (m_moveSendAcc >= 0.033f) // 20Hz
+	if (m_moveSendAcc >= 0.05f) // 20Hz
 	{
+		const float movePacketDelta = m_moveSendAcc;
 		m_moveSendAcc = 0.0f;
 
 		if (m_moveDirty)
 		{
-			SendObjectMoveToServer(m_pPlayer, m_lastSentState);
+			XMFLOAT3 input = m_pPlayer->m_xmf3InputDir;
+			const float length = std::sqrt(input.x * input.x + input.z * input.z);
+			if (length > 0.001f)
+			{
+				input.x /= length;
+				input.z /= length;
+			}
+			else
+			{
+				input.x = 0.0f;
+				input.z = 0.0f;
+			}
+			SendObjectMoveToServer(m_pPlayer, m_lastSentState,
+				input.x, input.z, movePacketDelta);
 			m_moveDirty = false;
 		}
 	}
@@ -1298,6 +1313,68 @@ void CMainScene::AnimateObjects(float fTimeElapsed)
 	XMFLOAT3 pos2 = m_pPlayer->GetPosition();
 	m_fPlayerPositionX = pos2.x;
 	m_fPlayerPositionZ = pos2.z;
+}
+
+void CMainScene::QueueRemoteMovementSnapshot(uint64 playerId,
+	const RemoteMovementSnapshot& snapshot)
+{
+	std::lock_guard<std::mutex> guard(m_remoteMovementMutex);
+	auto& snapshots = m_remoteMovementSnapshots[playerId];
+	if (!snapshots.empty() && snapshot.serverTick <= snapshots.back().serverTick)
+		return;
+	snapshots.push_back(snapshot);
+	while (snapshots.size() > 8)
+		snapshots.pop_front();
+}
+
+void CMainScene::UpdateRemoteMovementInterpolation()
+{
+	constexpr uint64 interpolationDelayMs = 100;
+	const uint64 nowMs = ::GetTickCount64();
+	const uint64 renderTimeMs = nowMs > interpolationDelayMs ? nowMs - interpolationDelayMs : 0;
+
+	std::lock_guard<std::mutex> guard(m_remoteMovementMutex);
+	for (auto& entry : m_remoteMovementSnapshots)
+	{
+		auto& snapshots = entry.second;
+		while (snapshots.size() >= 2 && snapshots[1].arrivalTimeMs <= renderTimeMs)
+			snapshots.pop_front();
+		if (snapshots.empty())
+			continue;
+
+		const RemoteMovementSnapshot* from = &snapshots.front();
+		const RemoteMovementSnapshot* to = from;
+		float alpha = 1.0f;
+		if (snapshots.size() >= 2)
+		{
+			to = &snapshots[1];
+			const uint64 spanMs = to->arrivalTimeMs - from->arrivalTimeMs;
+			if (spanMs > 0)
+			{
+				const float rawAlpha = static_cast<float>(renderTimeMs - from->arrivalTimeMs) /
+					static_cast<float>(spanMs);
+				alpha = rawAlpha < 0.0f ? 0.0f : (rawAlpha > 1.0f ? 1.0f : rawAlpha);
+			}
+		}
+
+		CGameObject* target = FindObjectByServerID(entry.first);
+		if (target == nullptr)
+			continue;
+		const XMFLOAT3 position(
+			from->position.x + (to->position.x - from->position.x) * alpha,
+			from->position.y + (to->position.y - from->position.y) * alpha,
+			from->position.z + (to->position.z - from->position.z) * alpha);
+		target->SetPosition(position.x, position.y, position.z);
+
+		XMVECTOR rotation = XMQuaternionSlerp(XMLoadFloat4(&from->rotation),
+			XMLoadFloat4(&to->rotation), alpha);
+		XMFLOAT4 interpolatedRotation;
+		XMStoreFloat4(&interpolatedRotation, rotation);
+		target->SetQuaternion(interpolatedRotation);
+		target->m_nAnimation = static_cast<int>(to->state);
+		if (CAnimatedObject* animated = dynamic_cast<CAnimatedObject*>(target))
+			animated->SetAnimationState(static_cast<EAnimationState>(to->state));
+	}
 }
 
 void CMainScene::OnlyShadowRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)

@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "ClientPacketHandler.h"
 #include "ServerPlayer.h"
 #include "Room.h"
@@ -8,26 +8,29 @@
 #include "GlobalWorld.h"
 #include"GameLogicGlobal.h"
 #include"WorldObjectDB.h"
+#include "ServerNavigation.h"
 
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
-// Á÷Á¢ ÄÁÅÙÃ÷ ÀÛ¾÷ÀÚ
+// ì§ì ‘ ì»¨í…ì¸  ì‘ì—…ì
 
 bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 {
-	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
+	PacketHeader header{};
+	if (buffer != nullptr && len >= static_cast<int32>(sizeof(PacketHeader)))
+		::memcpy(&header, buffer, sizeof(header));
 	
 	//std::cout << "[SERVER][INVALID] id=" << header->id << " size=" << header->size << std::endl;
 
 	return false;
 }
-//º¸³¾¶§ count, 
+//ë³´ë‚¼ë•Œ count,
 bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {
 	GameSessionRef gameSession = static_pointer_cast<GameSession>(session);
 
 	//cout << "[Handle_C_LOGIN] Login request received for player id: " << pkt.accountid() << " "<<pkt.password() <<endl;
-	// TODO : Validation Ã¼Å©
+	// TODO : Validation ì²´í¬
 	CreateWorldObjectTableIfNeeded();
 
 	if (IsWorldObjectTableEmpty())
@@ -86,12 +89,12 @@ bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 	session->Send(sendBuffers);*/
 	Protocol::S_OTHER otherP;
 	otherP.set_p_size(static_cast<uint32>(gameSession->_players.size()));
-	//cout << "ÇöÀç Á¢¼ÓÀÚ ¼ö" << otherP.p_size() << endl;
+	//cout << "í˜„ì¬ ì ‘ì†ì ìˆ˜" << otherP.p_size() << endl;
 	GSessionManager.ForEachSession([&](GameSessionRef s) {
 		PlayerRef pl = s->_currentPlayer;
 		if (!pl) return true;
 
-		// ÀÚ±â ÀÚ½ÅÀº Á¦¿Ü(¼±ÅÃ)
+		// ìê¸° ìì‹ ì€ ì œì™¸(ì„ íƒ)
 		if (pl->playerId == myPlayer->playerId)
 			return true;
 
@@ -136,7 +139,7 @@ bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 	otherP.set_p_size(otherP.p_size());
 	auto sendBuffer2 = ClientPacketHandler::MakeSendBuffer(otherP);
 	session->Send(sendBuffer2);
-//	cout << "[S_OTHER][SERVER] º¸³½´Ù ÇöÀç Á¢¼ÓÀÚ ¼ö" << otherP.p_size() << endl;
+//	cout << "[S_OTHER][SERVER] ë³´ë‚¸ë‹¤ í˜„ì¬ ì ‘ì†ì ìˆ˜" << otherP.p_size() << endl;
 
 	//auto snap = GWorld.Snapshot();
 	//for (const auto& o : snap)
@@ -165,43 +168,95 @@ bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 {
 	GameSessionRef gameSession = static_pointer_cast<GameSession>(session);
-	PlayerRef myPlayer = gameSession->_currentPlayer; // À§¿¡¼­ ÁöÁ¤ÇØµĞ ¸â¹ö¶ó°í °¡Á¤
+	PlayerRef myPlayer = gameSession->_currentPlayer;
 
-	if (myPlayer == nullptr)
+	if (myPlayer == nullptr || !pkt.has_player() || !pkt.player().has_transform())
+		return false;
+	if (pkt.sequence() == 0 || pkt.sequence() <= myPlayer->lastProcessedMoveSequence)
 		return true;
-	/*std::cout << "[C_MOVE][SERVER] from player=" << myPlayer->playerId
-		<< " pos=(" << pkt.player().transform().px() << ", "
-		<< pkt.player().transform().py() << ", "
-		<< pkt.player().transform().pz() << ")"
-		<< std::endl;*/
-	// 1) ¼­¹ö ±âÁØÀ¸·Î À§Ä¡ °»½Å
-	myPlayer->ts = pkt.player().transform();
-	//myPlayer->playerState = pkt.player().state();
 
-	// 2) ³ª Æ÷ÇÔ, ¸ğµç Å¬¶ó¿¡°Ô S_MOVE ºê·ÎµåÄ³½ºÆ®
-	Protocol::S_MOVE movePkt;
-	movePkt.set_playerid(myPlayer->playerId);
+	const uint64 nowMs = ::GetTickCount64();
+	float elapsedSeconds = 0.05f;
+	if (myPlayer->lastMoveTimeMs != 0)
+		elapsedSeconds = static_cast<float>(nowMs - myPlayer->lastMoveTimeMs) / 1000.0f;
+	myPlayer->lastMoveTimeMs = nowMs;
+
+	const Protocol::Transform& requestedTransform = pkt.player().transform();
+	const ServerPosition current{ myPlayer->ts.px(), myPlayer->ts.py(), myPlayer->ts.pz() };
+	float inputX = pkt.input_x();
+	float inputZ = pkt.input_z();
+	if (!std::isfinite(inputX) || !std::isfinite(inputZ))
 	{
-		
-		movePkt.mutable_player()->mutable_transform()->set_px(pkt.player().transform().px());
-		movePkt.mutable_player()->mutable_transform()->set_py(pkt.player().transform().py());
-		movePkt.mutable_player()->mutable_transform()->set_pz(pkt.player().transform().pz());
+		inputX = 0.0f;
+		inputZ = 0.0f;
+		++myPlayer->invalidMoveCount;
+	}
+	const float inputLength = std::sqrt(inputX * inputX + inputZ * inputZ);
+	if (inputLength > 1.0f)
+	{
+		inputX /= inputLength;
+		inputZ /= inputLength;
+	}
+	const float clientDelta = std::clamp(pkt.delta_time(), 0.001f, 0.1f);
+	const float simulationDelta = (std::min)(clientDelta, std::clamp(elapsedSeconds, 0.001f, 0.1f));
+	constexpr float movementSpeed = 6.0f;
+	const ServerPosition requested{
+		current.x + inputX * movementSpeed * simulationDelta,
+		requestedTransform.py(),
+		current.z + inputZ * movementSpeed * simulationDelta };
+	std::vector<NavigationObstacle> obstacles = GWorld.GetNavigationObstacles();
+	const float playerRadius = ServerNavigation::GetPlayerRadius();
+	GSessionManager.ForEachSession([&](const GameSessionRef& otherSession)
+	{
+		const PlayerRef& otherPlayer = otherSession->_currentPlayer;
+		if (otherPlayer == nullptr || otherPlayer->playerId == myPlayer->playerId)
+			return;
 
-		movePkt.mutable_player()->mutable_transform()->set_qx(pkt.player().transform().qx());
-		movePkt.mutable_player()->mutable_transform()->set_qy(pkt.player().transform().qy());
-		movePkt.mutable_player()->mutable_transform()->set_qz(pkt.player().transform().qz());
-		movePkt.mutable_player()->mutable_transform()->set_qw(pkt.player().transform().qw());
+		const float otherX = otherPlayer->ts.px();
+		const float otherZ = otherPlayer->ts.pz();
+		obstacles.push_back(NavigationObstacle{
+			otherPlayer->playerId,
+			otherX - playerRadius, otherX + playerRadius,
+			otherZ - playerRadius, otherZ + playerRadius });
+	});
+	const MoveValidationResult validation = GNavigation.ValidateMove(
+		current, requested, simulationDelta, obstacles);
+
+	if (validation.corrected)
+	{
+		++myPlayer->invalidMoveCount;
+		std::cout << "[MOVE_CORRECTION] playerId=" << myPlayer->playerId
+			<< " reason=" << static_cast<int32>(validation.reason)
+			<< " requested=(" << requested.x << ", " << requested.y << ", " << requested.z << ")"
+			<< " corrected=(" << validation.position.x << ", " << validation.position.y
+			<< ", " << validation.position.z << ") count=" << myPlayer->invalidMoveCount << std::endl;
+	}
+	else if (myPlayer->invalidMoveCount > 0)
+	{
+		--myPlayer->invalidMoveCount;
 	}
 
-	movePkt.mutable_player()->set_state(pkt.player().state());
+	myPlayer->ts.CopyFrom(requestedTransform);
+	myPlayer->ts.set_px(validation.position.x);
+	myPlayer->ts.set_py(validation.position.y);
+	myPlayer->ts.set_pz(validation.position.z);
+	myPlayer->playerState = pkt.player().state();
+	myPlayer->lastProcessedMoveSequence = pkt.sequence();
+
+	Protocol::S_MOVE movePkt;
+	movePkt.set_playerid(myPlayer->playerId);
+	movePkt.mutable_player()->set_id(myPlayer->playerId);
+	movePkt.mutable_player()->set_state(myPlayer->playerState);
+	movePkt.mutable_player()->mutable_transform()->CopyFrom(myPlayer->ts);
+	movePkt.set_last_processed_sequence(myPlayer->lastProcessedMoveSequence);
+	movePkt.set_server_tick(static_cast<uint32>(nowMs));
 
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
-	/*std::cout << "[S_MOVE][SERVER] º¸³½´Ù" <<
-		" pos=(" << movePkt.player().transform().px() << ", "
-		<< movePkt.player().transform().py() << ", "
-		<< movePkt.player().transform().pz() << ")"
-		<< std::endl;*/
-	GSessionManager.Broadcast(sendBuffer); // WRITE_LOCK
+	GSessionManager.Broadcast(sendBuffer);
+
+	if (myPlayer->invalidMoveCount >= 20)
+		std::cout << "[MOVE_ABUSE] playerId=" << myPlayer->playerId << std::endl;
+
 	return true;
 }
 bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTREQ& pkt)
@@ -212,12 +267,12 @@ bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTR
 	if (!myPlayer)
 		return true;
 	//cout << "[Handle_C_PLACEOBJECTREQ] Player placing object: " << myPlayer->name << " with ID " << myPlayer->playerId << endl;
-	// 1) °£´Ü °ËÁõ(ÃÖ¼Ò)
+	// 1) ê°„ë‹¨ ê²€ì¦(ìµœì†Œ)
 	uint32 modelType = pkt.model_type();
-	if (modelType == 0) // None = 0 °°Àº °Å ¸·±â
+	if (modelType == 0) // None = 0 ê°™ì€ ê±° ë§‰ê¸°
 		return true;
 	//cout << "[Handle_C_PLACEOBJECTREQ] modelType: " << modelType << endl;
-	// 2) ¼­¹ö ±ÇÀ§·Î ¿ÀºêÁ§Æ® »ı¼º(Àü¿ª¸Ê 1°³)
+	// 2) ì„œë²„ ê¶Œìœ„ë¡œ ì˜¤ë¸Œì íŠ¸ ìƒì„±(ì „ì—­ë§µ 1ê°œ)
 	Protocol::S_OBJECTSPAWN spawnPkt;
 	if ((modelType > 200 && modelType <= 600)||(modelType > 619 && modelType <= 623))
 	{
@@ -265,12 +320,11 @@ bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTR
 		spawnPkt.mutable_transform()->set_py(pkt.transform().py());
 		spawnPkt.mutable_transform()->set_pz(pkt.transform().pz());
 	}
-	// 3) ¸ğµç Å¬¶ó¿¡°Ô ½ºÆù ºê·ÎµåÄ³½ºÆ®
+	// 3) ëª¨ë“  í´ë¼ì—ê²Œ ìŠ¤í° ë¸Œë¡œë“œìºìŠ¤íŠ¸
 	
 
 	spawnPkt.set_owner_player_id(myPlayer->playerId);
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(spawnPkt);
-	auto* header = reinterpret_cast<PacketHeader*>(sendBuffer->Buffer());
 	//cout << "[SERVER] sending packet id=" << header->id
 	//	<< " size=" << header->size << endl;
 	GSessionManager.Broadcast(sendBuffer);
@@ -295,7 +349,7 @@ bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTR
 //	//std::cout << "[C_WORLD_INIT] from player " << senderId
 //	//	<< " count=" << pkt.objects_size() << "\n";
 //
-//	// 2) ¼­¹ö ¿ùµå¿¡ ½ºÆù
+//	// 2) ì„œë²„ ì›”ë“œì— ìŠ¤í°
 //	//for (int i = 0; i < pkt.objects_size(); i++)
 //	//{
 //	//	const Protocol::WorldObject& obj = pkt.objects(i);
@@ -307,18 +361,18 @@ bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTR
 //	//		100,
 //	//		t.px(), t.py(), t.pz(),
 //	//		t.qx(), t.qy(), t.qz(), t.qw(),
-//	//		0 // ¿ùµå ¸®¼Ò½º´Â owner ¾øÀ½		
+//	//		0 // ì›”ë“œ ë¦¬ì†ŒìŠ¤ëŠ” owner ì—†ìŒ
 //	//	);
 //	//	cout << "[C_WORLD_INIT] object spawned: "<<obj.temp_id()
 //	//		<< obj.model_type()
 //	//		<< " pos=(" << t.px() << ", " << t.py() << ", " << t.pz() <<")\n";
 //	//}
 //
-//	// 3) ¿ùµå ÃÊ±âÈ­ ¿Ï·á ¸¶Å·
+//	// 3) ì›”ë“œ ì´ˆê¸°í™” ì™„ë£Œ ë§ˆí‚¹
 //	GWorld.MarkInitialized(true);
 //
-//	// 4) ¼­¹ö¿¡ ÀÖ´Â ¿ùµå ÀüÃ¼¸¦ ¸ğµç Å¬¶ó¿¡°Ô ½ºÆù ºê·ÎµåÄ³½ºÆ®
-//	// (ÀÌ¹Ì ÀÖ´Â S_OBJECTSPAWN Àç»ç¿ë)
+//	// 4) ì„œë²„ì— ìˆëŠ” ì›”ë“œ ì „ì²´ë¥¼ ëª¨ë“  í´ë¼ì—ê²Œ ìŠ¤í° ë¸Œë¡œë“œìºìŠ¤íŠ¸
+//	// (ì´ë¯¸ ìˆëŠ” S_OBJECTSPAWN ì¬ì‚¬ìš©)
 //	auto snap = GWorld.Snapshot();
 //	for (const auto& o : snap)
 //	{
@@ -390,9 +444,9 @@ bool Handle_C_GATHER_REQ(PacketSessionRef& session, Protocol::C_GATHER_REQ& pkt)
 bool Handle_C_SEEDGROWTH(PacketSessionRef& session, Protocol::C_SEEDGROWTH& pkt)
 {
 	int64 objectId = pkt.object_id();
-	uint64 check = pkt.cropcheckcell(); // ÃµÀå Ã¼Å©
+	uint64 check = pkt.cropcheckcell(); // ì²œì¥ ì²´í¬
 
-	// check °ª ÀÇ¹Ì¸¦ È®½ÇÈ÷: 0ÀÌ¸é ÃµÀå ¾øÀ½, 1ÀÌ¸é ÃµÀå ÀÖÀ½ °¡Á¤
+	// check ê°’ ì˜ë¯¸ë¥¼ í™•ì‹¤íˆ: 0ì´ë©´ ì²œì¥ ì—†ìŒ, 1ì´ë©´ ì²œì¥ ìˆìŒ ê°€ì •
 	bool hasCeiling = check;
 
 	bool ok = GWorld.ApplySeedGrowthRule(objectId, hasCeiling);
@@ -406,7 +460,7 @@ bool Handle_C_SEEDGROWTH(PacketSessionRef& session, Protocol::C_SEEDGROWTH& pkt)
 bool Handle_C_CROPSTATE(PacketSessionRef& session, Protocol::C_CROPSTATE& pkt)
 {
 	const uint64 objectId = pkt.object_id();
-	const uint32 newModelType = pkt.model_type(); // proto ÇÊµå¸í ¸ÂÃç
+	const uint32 newModelType = pkt.model_type(); // proto í•„ë“œëª… ë§ì¶°
 
 	if (!GWorld.SetModelType(objectId, newModelType))
 	{

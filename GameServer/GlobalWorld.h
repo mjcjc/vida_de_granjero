@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 #include "pch.h"
 #include <unordered_map>
 #include "WorldEnviroment.h"
+#include "ServerNavigation.h"
 
 using ObjectId = uint64;
 
@@ -29,6 +30,7 @@ public:
 
     ObjectId Spawn(uint64 tempid,uint32 modelType, uint32 hp,float x, float y, float z, float qx, float qy, float qz, float qw, uint64 ownerPlayerId);
     std::vector<WorldObject> Snapshot() const;
+    std::vector<NavigationObstacle> GetNavigationObstacles() const;
 
     void SendSnapshotTo(PacketSessionRef& session);
     int GetInitialized() const { return _initialized; }

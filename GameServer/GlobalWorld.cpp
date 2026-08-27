@@ -1,4 +1,4 @@
-#include "pch.h"
+Ôªø#include "pch.h"
 #include "GlobalWorld.h"
 #include"Protocol.pb.h"
 #include"ClientPacketHandler.h"
@@ -17,7 +17,7 @@ static float Clamp01(float v)
 }
 ObjectId GlobalWorld::ClSpawn(uint64 tempid,uint32 modelType, uint32 hp, float x, float y, float z, float qx, float qy, float qz, float qw, uint64 ownerPlayerId)
 {
-    WRITE_LOCK; // ≥  º≠πˆ¿« lock ∏≈≈©∑Œ(= WriteLockGuard) ªÁøÎ ¡ﬂ¿Ã∏È ¿Ã∞≈ æ≤∏È µ 
+    WRITE_LOCK; // ÎÑà ÏÑúÎ≤ÑÏùò lock Îß§ÌÅ¨Î°ú(= WriteLockGuard) ÏÇ¨Ïö© Ï§ëÏù¥Î©¥ Ïù¥Í±∞ Ïì∞Î©¥ Îê®
     WorldObject obj;
     obj.tempId = tempid;
     obj.hp = hp;
@@ -36,7 +36,7 @@ ObjectId GlobalWorld::ClSpawn(uint64 tempid,uint32 modelType, uint32 hp, float x
     _objects.emplace(tempid, obj);
     return tempid;
 }
-//±‚¡∏¿∫ ¿ß
+//Í∏∞Ï°¥ÏùÄ ÏúÑ
 ObjectId GlobalWorld::Spawn(
     uint64 tempid,
     uint32 modelType,
@@ -51,7 +51,7 @@ ObjectId GlobalWorld::Spawn(
 
     WorldObject obj;
     obj.id = id;
-    obj.tempId = tempid;                 // (ACK ∏≈«ŒøÎ, æ¯æÓµµ µ )
+    obj.tempId = tempid;                 // (ACK Îß§ÌïëÏö©, ÏóÜÏñ¥ÎèÑ Îê®)
     obj.hp = hp;
     obj.modelType = modelType;
     obj.x = x; obj.y = y; obj.z = z;
@@ -96,6 +96,57 @@ std::vector<WorldObject> GlobalWorld::Snapshot() const
 
     return out;
 }
+
+namespace
+{
+	struct CollisionExtent
+	{
+		float halfWidth;
+		float halfDepth;
+	};
+
+	CollisionExtent GetCollisionExtent(uint32 modelType)
+	{
+		switch (modelType)
+		{
+		case 610: return { 1.2f, 1.2f };
+		case 611: return { 1.5f, 1.5f };
+		case 620: return { 1.0f, 2.5f };
+		case 630: return { 1.2f, 1.2f };
+		case 631: return { 1.2f, 1.2f };
+		default:  return { 0.75f, 0.75f };
+		}
+	}
+}
+
+std::vector<NavigationObstacle> GlobalWorld::GetNavigationObstacles() const
+{
+	READ_LOCK;
+	std::vector<NavigationObstacle> result;
+	result.reserve(_objects.size() + 6);
+
+	for (const auto& [objectId, object] : _objects)
+	{
+		if (!object.alive || GWorldEnv.IsCropModel(object.modelType))
+			continue;
+		if (object.modelType == 601 || object.modelType == 621 || object.modelType == 622
+			|| object.modelType == 640 || object.modelType == 641)
+			continue;
+
+		const CollisionExtent extent = GetCollisionExtent(object.modelType);
+		result.push_back({ objectId, object.x - extent.halfWidth, object.x + extent.halfWidth,
+			object.z - extent.halfDepth, object.z + extent.halfDepth });
+	}
+
+	// Same six barn wall regions currently used by CPlayer::Move.
+	result.push_back({ 0, -7.50f, -1.54f, 14.56f, 15.50f });
+	result.push_back({ 0, 1.45f, 7.50f, 14.56f, 15.50f });
+	result.push_back({ 0, -7.50f, -1.54f, -15.93f, -15.22f });
+	result.push_back({ 0, 1.45f, 7.50f, -15.93f, -15.22f });
+	result.push_back({ 0, -8.0f, -7.0f, -15.93f, 15.50f });
+	result.push_back({ 0, 7.0f, 8.0f, -15.93f, 15.50f });
+	return result;
+}
 void GlobalWorld::SendSnapshotTo(PacketSessionRef& session)
 {
     Protocol::S_WORLD_INIT pkt;
@@ -115,7 +166,7 @@ void GlobalWorld::SendSnapshotTo(PacketSessionRef& session)
 
         o->set_model_type(it.modelType);
 
-        // ∞°¥…«œ∏È temp_id ∏ª∞Ì object_idµµ ∞∞¿Ã ∫∏≥ª¥¬ ±∏¡∂∞° ¥ı ¡¡¿Ω
+        // Í∞ÄÎä•ÌïòÎ©¥ temp_id ÎßêÍ≥† object_idÎèÑ Í∞ôÏù¥ Î≥¥ÎÇ¥Îäî Íµ¨Ï°∞Í∞Ä Îçî Ï¢ãÏùå
         o->set_temp_id(it.id);
     }
 
@@ -155,7 +206,7 @@ void GlobalWorld::SendSnapshotTo(PacketSessionRef& session)
 //    obj.alive = false;
 //    if (obj.modelType == 202 || obj.modelType == 302 || obj.modelType == 402 || obj.modelType == 502)
 //    {
-//        GGameLogic->OnMissionCompleted(20); // øπΩ√: πÃº« ¡°ºˆ ¡ı∞°
+//        GGameLogic->OnMissionCompleted(20); // ÏòàÏãú: ÎØ∏ÏÖò Ï†êÏàò Ï¶ùÍ∞Ä
 //        Protocol::S_WORLD_STATE pkt;
 //        pkt.set_mission_score(GWorldEnv.GetMissionScore());
 //        pkt.set_season((int32_t)GWorldEnv.GetSeason());
@@ -244,14 +295,14 @@ bool GlobalWorld::PlayerDespawn(uint64 id)
    ///* if (!obj.alive)
    //     return false;*/
 
-   // // πÃº« √≥∏Æ
+   // // ÎØ∏ÏÖò Ï≤òÎ¶¨
    // if (obj.modelType == 202 || obj.modelType == 302 ||
    //     obj.modelType == 402 || obj.modelType == 502)
    // {
    //     GGameLogic->OnMissionCompleted(10);
 
    //     _objects.erase(it);
-   //     //returnæ¯æ˙¿Ω.
+   //     //returnÏóÜÏóàÏùå.
    //     return true;
    // }
    // return true;
@@ -669,7 +720,7 @@ void GlobalWorld::ReadTextFile(char* pstrFileName, PacketSessionRef& session)
 
         while (readFile >> token)
         {
-            // UTF-8 BOM ¡¶∞≈
+            // UTF-8 BOM Ï†úÍ±∞
             if (token.size() >= 3 &&
                 (unsigned char)token[0] == 0xEF &&
                 (unsigned char)token[1] == 0xBB &&

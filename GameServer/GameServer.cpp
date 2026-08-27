@@ -15,11 +15,15 @@
 #include "WorldEnviroment.h"
 #include "GlobalWorld.h"
 #include "WorldObjectDB.h"
+#include "ServerNavigation.h"
 
- WorldEnvironment GWorldEnv;
- GlobalWorld GWorld;
+WorldEnvironment GWorldEnv;
+GlobalWorld GWorld;
+
 int main()
 {
+	ASSERT_CRASH(GNavigation.Init());
+
 	DBConfig cfg;
 	cfg.SetHost("tcp://127.0.0.1:3306");
 	cfg.SetUser("game_user");
@@ -31,7 +35,8 @@ int main()
 	CreateWorldObjectTableIfNeeded();
 
 	ClientPacketHandler::Init();
-	GGameLogic = new GameLogic(&GWorldEnv);
+	auto gameLogic = std::make_unique<GameLogic>(&GWorldEnv);
+	GGameLogic = gameLogic.get();
 	ServerServiceRef service = MakeShared<ServerService>(
 		NetAddress(L"127.0.0.1", 7777),
 		MakeShared<IocpCore>(),
@@ -40,19 +45,19 @@ int main()
 	
 	ASSERT_CRASH(service->Start());
 
-		GThreadManager->Launch([=]()
+		GThreadManager->Launch([]()
 			{
 				while (true)
 				{
 					uint64 nowMs = ::GetTickCount64();
 					GWorld.UpdateGrowth(nowMs, ESeason::Autumn, EWeather::Clear);
-					this_thread::sleep_for(1s);
+					this_thread::sleep_for(std::chrono::seconds(1));
 				}
 			});
 
 	for (int32 i = 0; i < 5; i++)
 	{
-		GThreadManager->Launch([=]()
+		GThreadManager->Launch([service]()
 			{
 				while (true)
 				{

@@ -5,6 +5,12 @@
 #include "GraphicsCommon.h";
 #include "ClientNetwork.h";
 
+struct PendingMoveInput
+{
+	uint32 sequence = 0;
+	XMFLOAT3 predictedDelta = { 0.0f, 0.0f, 0.0f };
+};
+
 //나무, 바위, 풀을 배치하는 파싱용 데이터 구조
 struct StageSpawnEntry
 {	
@@ -509,7 +515,10 @@ protected:
 		XMUINT3 m_ClusterDim = XMUINT3(32, 32, 24); //어떻게 클러스터드를 쪼갤지
 
 		public:
-			void SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState state);
+			void SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState state,
+				float inputX = 0.0f, float inputZ = 0.0f, float deltaTime = 0.0f);
+			void ReconcileLocalPlayer(CGameObject* pObj, const XMFLOAT3& serverPosition,
+				uint32 lastProcessedSequence);
 
 			// Login
 			int m_szLoginID =  0;
@@ -519,6 +528,17 @@ protected:
 			bool m_bLoginRequesting = false;
 			bool m_bShowLoginUI = true;
 
+			uint32 m_nextMoveSequence = 1;
+			XMFLOAT3 m_lastPredictedMovePosition = { 0.0f, 0.0f, 0.0f };
+			bool m_hasPredictedMovePosition = false;
+			vector<PendingMoveInput> m_pendingMoveInputs;
+			std::mutex m_movementReconciliationMutex;
+			CGameObject* m_pMovementCorrectionTarget = nullptr;
+			XMFLOAT3 m_movementCorrection = { 0.0f, 0.0f, 0.0f };
+			CGameObject* m_pLastMovePacketObject = nullptr;
+			Protocol::PlayerState m_lastMovePacketState = Protocol::PlayerState::IDLE;
+			uint64 m_lastMovePacketTimeMs = 0;
+			bool m_wasAirborneForNetwork = false;
+
 		
 };
-

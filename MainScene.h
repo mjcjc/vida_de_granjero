@@ -2,6 +2,8 @@
 #include "Scene.h"
 #include "Player.h"
 #include <mutex>
+#include <deque>
+#include <unordered_map>
 ///////////////////////////////////// <summary>//////////////////////////////////////
 /// 어쩔 수 없이 보내려고 만들어 둔 거니 이해좀 해주십쇼...
 struct WorldSpawnInfo 
@@ -9,6 +11,15 @@ struct WorldSpawnInfo
 	uint32 objId;
 	uint32 type;
 	XMFLOAT3 positions;
+};
+
+struct RemoteMovementSnapshot
+{
+	uint64 arrivalTimeMs = 0;
+	uint32 serverTick = 0;
+	XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+	Protocol::PlayerState state = Protocol::PlayerState::IDLE;
 };
 ///////////////////////////////////// <summary>//////////////////////////////////////
 class CMainScene : public CScene 
@@ -248,6 +259,10 @@ public:
 		bool  m_moveDirty = false;
 		XMFLOAT3 m_lastSentPos = { 0,0,0 }; // 선택(변화 감지용)
 		Protocol::PlayerState m_lastSentState = Protocol::PlayerState::IDLE;
+		void QueueRemoteMovementSnapshot(uint64 playerId, const RemoteMovementSnapshot& snapshot);
+		void UpdateRemoteMovementInterpolation();
+		std::mutex m_remoteMovementMutex;
+		std::unordered_map<uint64, std::deque<RemoteMovementSnapshot>> m_remoteMovementSnapshots;
 		int GUIOnOFF = 0; // 설치 아이템 설정을 보는 GUI를 안보이게 했다 보이게 했다 하는 부분
 	
 

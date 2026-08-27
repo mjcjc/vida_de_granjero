@@ -1,4 +1,4 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "GameSession.h"
 #include "GameSessionManager.h"
 #include "ClientPacketHandler.h"
@@ -23,12 +23,12 @@ void GameSession::OnConnected()
 
     _currentPlayer->ownerSession = static_pointer_cast<GameSession>(shared_from_this());
 	cout << "[GameSession] New player connected with ID " << _currentPlayer->playerId << endl;
-    // ¹æ/¸Å´ÏÀú¿¡ µî·Ï
+    // ë°©/ë§¤ë‹ˆì €ì— ë“±ë¡
   
-    Protocol::S_LOGIN pkt;              // ÀÌ¸§¸¸ ·Î±×ÀÎÀÏ »Ó, Áö±ÝÀº ´Ü¼ø IDÅëÁö¿ëÀ¸·Î »ç¿ë
+    Protocol::S_LOGIN pkt;              // ì´ë¦„ë§Œ ë¡œê·¸ì¸ì¼ ë¿, ì§€ê¸ˆì€ ë‹¨ìˆœ IDí†µì§€ìš©ìœ¼ë¡œ ì‚¬ìš©
 
     auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
-    Send(sendBuffer);                   // ÀÌ ¼¼¼Ç¿¡¸¸ Àü¼Û
+    Send(sendBuffer);                   // ì´ ì„¸ì…˜ì—ë§Œ ì „ì†¡
 }
 
 
@@ -59,9 +59,6 @@ void GameSession::OnDisconnected()
 void GameSession::OnRecvPacket(BYTE* buffer, int32 len)
 {
 	PacketSessionRef session = GetPacketSessionRef();
-	PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
-
-	// TODO : packetId ´ë¿ª Ã¼Å©
 	ClientPacketHandler::HandlePacket(session, buffer, len);
 }
 

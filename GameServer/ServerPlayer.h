@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include"Struct.pb.h"
 
 
@@ -13,4 +13,7 @@ public:
 	Protocol::PlayerType	type = Protocol::PLAYER_TYPE_NONE;
 	Protocol::PlayerState   playerState = Protocol::IDLE;
 	GameSessionRef			ownerSession; // Cycle
+	uint64                  lastMoveTimeMs = 0;
+	uint32                  invalidMoveCount = 0;
+	uint32                  lastProcessedMoveSequence = 0;
 };

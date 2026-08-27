@@ -39,6 +39,9 @@
     <ClCompile Include="Room.cpp">
       <Filter>GameContents</Filter>
     </ClCompile>
+    <ClCompile Include="ServerNavigation.cpp">
+      <Filter>GameContents</Filter>
+    </ClCompile>
     <ClCompile Include="Enum.pb.cc">
       <Filter>Protocol</Filter>
     </ClCompile>
@@ -81,6 +84,9 @@
       <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="ServerPlayer.h">
+      <Filter>GameContents</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerNavigation.h">
       <Filter>GameContents</Filter>
     </ClInclude>
     <ClInclude Include="Enum.pb.h">

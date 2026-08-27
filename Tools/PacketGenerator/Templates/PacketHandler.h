@@ -1,4 +1,5 @@
 #pragma once
+#include "CorePch.h"
 #include "Protocol.pb.h"
 
 using PacketHandlerFunc = std::function<bool(PacketSessionRef&, BYTE*, int32)>;
@@ -33,8 +34,13 @@ public:
 
 	static bool HandlePacket(PacketSessionRef& session, BYTE* buffer, int32 len)
 	{
-		PacketHeader* header = reinterpret_cast<PacketHeader*>(buffer);
-		return GPacketHandler[header->id](session, buffer, len);
+		if (buffer == nullptr || len < static_cast<int32>(sizeof(PacketHeader)))
+			return false;
+		PacketHeader header{};
+		::memcpy(&header, buffer, sizeof(header));
+		if (header.size != len)
+			return false;
+		return GPacketHandler[header.id](session, buffer, len);
 	}
 
 {%- for pkt in parser.send_pkt %}
@@ -59,10 +65,11 @@ private:
 		const uint16 packetSize = dataSize + sizeof(PacketHeader);
 
 		SendBufferRef sendBuffer = GSendBufferManager->Open(packetSize);
-		PacketHeader* header = reinterpret_cast<PacketHeader*>(sendBuffer->Buffer());
-		header->size = packetSize;
-		header->id = pktId;
-		ASSERT_CRASH(pkt.SerializeToArray(&header[1], dataSize));
+		PacketHeader header{};
+		header.size = packetSize;
+		header.id = pktId;
+		::memcpy(sendBuffer->Buffer(), &header, sizeof(header));
+		ASSERT_CRASH(pkt.SerializeToArray(sendBuffer->Buffer() + sizeof(PacketHeader), dataSize));
 		sendBuffer->Close(packetSize);
 
 		return sendBuffer;

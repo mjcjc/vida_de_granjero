@@ -1,5 +1,7 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "StartScene.h"
+
+extern std::atomic_bool StartFlagForServer;
 
 void CStartScene::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
@@ -12,13 +14,13 @@ bool CStartScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wP
 	{
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
-		//¸¶¿ì½º Ä¸ÃÄ¸¦ ÇÏ°í ÇöÀç ¸¶¿ì½º À§Ä¡¸¦ °¡Á®¿Â´Ù
+		//ë§ˆìš°ìŠ¤ ìº¡ì³ë¥¼ í•˜ê³  í˜„ì¬ ë§ˆìš°ìŠ¤ ìœ„ì¹˜ë¥¼ ê°€ì ¸ì˜¨ë‹¤
 		::SetCapture(hWnd);
 		::GetCursorPos(&m_ptOldCursorPos);
 		break;
 	case WM_LBUTTONUP:
 	case WM_RBUTTONUP:
-		//¸¶¿ì½º Ä¸ÃÄ¸¦ ÇØÁ¦ÇÑ´Ù.
+		//ë§ˆìš°ìŠ¤ ìº¡ì³ë¥¼ í•´ì œí•œë‹¤.
 		::ReleaseCapture();
 		break;
 	case WM_MOUSEMOVE:
@@ -32,7 +34,6 @@ bool CStartScene::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wP
 
 bool CStartScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
-	CScene* pscene = nullptr;
 	switch (nMessageID)
 	{
 	case WM_KEYUP:
@@ -43,11 +44,8 @@ bool CStartScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM
 		case VK_F3:
 			break;
 		case 'P':
-			std::cout << "CStartScene¿¡¼­ MainSceneÀ¸·Î ÀÌµ¿"<<endl;
-			pscene = new CMainScene(m_hWnd, m_pGameTimer, std::move(m_upClientNetwork));
-			CSceneManager::GetInstance().PushScene(pscene);
-			CSceneManager::GetInstance().SetSceneNumber(1);
-			CSceneManager::GetInstance().NotifySceneStuck(1);
+			std::cout << "CStartSceneì—ì„œ MainSceneìœ¼ë¡œ ì´ë™"<<endl;
+			EnterMainScene();
 			break;
 		default:
 			break;
@@ -62,13 +60,29 @@ bool CStartScene::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 bool CStartScene::ProcessInput()
 {
-	
+	if (StartFlagForServer.exchange(false)) {
+		EnterMainScene();
+	}
+
 	return false;
+}
+
+bool CStartScene::EnterMainScene() {
+	if (m_bMainSceneTransitionStarted || CSceneManager::GetInstance().GetSceneNumber() != 0) {
+		return false;
+	}
+
+	m_bMainSceneTransitionStarted = true;
+	CScene* pScene = new CMainScene(m_hWnd, m_pGameTimer, std::move(m_upClientNetwork));
+	CSceneManager::GetInstance().PushScene(pScene);
+	CSceneManager::GetInstance().SetSceneNumber(1);
+	CSceneManager::GetInstance().NotifySceneStuck(1);
+	return true;
 }
 
 void CStartScene::ReleaseObjects()
 {
-	if (m_pd3dRootSignature) m_pd3dRootSignature.Reset();	//ComPtrÀ» ›§±â¿¡ ±¸Áö ÇÊ¿äÇÏÁø ¾ÊÀºµ¥
+	if (m_pd3dRootSignature) m_pd3dRootSignature.Reset();	//ComPtrì„ ì»ê¸°ì— êµ¬ì§€ í•„ìš”í•˜ì§„ ì•Šì€ë°
 
 	if (m_ppObjects)
 	{
@@ -84,7 +98,7 @@ void CStartScene::ReleaseObjects()
 	{
 		delete[] m_pShaders;
 	}
-	if (m_pd3dPipelineState) m_pd3dPipelineState.Reset();	//Ç×»ó Release·Î ¸Ş¸ğ¸® °ü¸®°¡ ÇÊ¿äÇÏ´Ü°É ÀØÁö¸»ÀÚ.
+	if (m_pd3dPipelineState) m_pd3dPipelineState.Reset();	//í•­ìƒ Releaseë¡œ ë©”ëª¨ë¦¬ ê´€ë¦¬ê°€ í•„ìš”í•˜ë‹¨ê±¸ ìŠì§€ë§ì.
 
 
 }
@@ -116,7 +130,7 @@ void CStartScene::OnGUI(ImGuiIO* pGuiIO)
 	CScene::OnGUI(pGuiIO);
 }
 
-//±×¸²ÀÚ¸¦ À§ÇÑ Ã³¸®¸¦ ÇÒ °ÍÀÌ´Ù
+//ê·¸ë¦¼ìë¥¼ ìœ„í•œ ì²˜ë¦¬ë¥¼ í•  ê²ƒì´ë‹¤
 void CStartScene::OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, int nRenderTargets, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dRtvCPUHandles, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dDsvCPUHandle, CCamera* pCamera)
 {
 
@@ -127,7 +141,7 @@ void CStartScene::OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, int nR
 	//{
 	//	for (int i = 0; i < MAX_LIGHTS; i++)
 	//	{
-	//		//TODO ¿©±â´Ù°¡ Á¶¸í Shader Ã³¸®¸¦ ÇÑ¹ø ¿¡ ÂÓ ÇØ¾ßÇÑ´Ù 
+	//		//TODO ì—¬ê¸°ë‹¤ê°€ ì¡°ëª… Shader ì²˜ë¦¬ë¥¼ í•œë²ˆ ì— ì«™ í•´ì•¼í•œë‹¤
 	//	}
 	//}
 }

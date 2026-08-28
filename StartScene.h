@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "Scene.h"
 #include "MainScene.h"
 
@@ -25,18 +25,19 @@ public:
 	virtual bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	virtual bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
-	//void CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);	//·çÆ® ½Ã±×´ÏÃÄ¸¦ »ı¼ºÇØÁÖ´Â ÇÔ¼ö ==> ÀÌ µÑÀº ³ªÁß¿¡
+	//void CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);	//ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ë¥¼ ìƒì„±í•´ì£¼ëŠ” í•¨ìˆ˜ ==> ì´ ë‘˜ì€ ë‚˜ì¤‘ì—
 
 	virtual void BuildObjects(ID3D12Device* pd3dDeivce, ID3D12GraphicsCommandList* pd3dCommandList);
 
-	virtual void ReleaseObjects(); //Ç×»ó »ı¼ºÇÏ´Â ¿ÀºêÁ§Æ®°¡ Á¸ÀçÇÑ´Ù¸é, »èÁ¦µµ ´ç¿¬È÷ Á¸ÀçÇØ¾ßÇÑ´Ù.
+	virtual void ReleaseObjects(); //í•­ìƒ ìƒì„±í•˜ëŠ” ì˜¤ë¸Œì íŠ¸ê°€ ì¡´ì¬í•œë‹¤ë©´, ì‚­ì œë„ ë‹¹ì—°íˆ ì¡´ì¬í•´ì•¼í•œë‹¤.
 
 	virtual bool ProcessInput();	//
+	bool EnterMainScene();
 
 	//virtual void AnimateObjects(float fTimeElapsed);	//
 	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, int nRenderTargets, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dRtvCPUHandles,
 		D3D12_CPU_DESCRIPTOR_HANDLE* pd3dDsvCPUHandle, CCamera* pCamera);
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);	//Render¸¦ ÇÒ¶§ ¿©·¯ Ä«¸Ş¶ó°¡ Á¸ÀçÇÒ ¼ö ÀÖ°í, Ä«¸Ş¶ó¿¡ µû¶ó °ªÀÌ ´Ş¶óÁú ¼ö ÀÖÀ½À¸·Î Camera¸¦ ÆÄ¶ó¹ÌÅÍ·Î ¹Ş´Â´Ù.
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);	//Renderë¥¼ í• ë•Œ ì—¬ëŸ¬ ì¹´ë©”ë¼ê°€ ì¡´ì¬í•  ìˆ˜ ìˆê³ , ì¹´ë©”ë¼ì— ë”°ë¼ ê°’ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìŒìœ¼ë¡œ Cameraë¥¼ íŒŒë¼ë¯¸í„°ë¡œ ë°›ëŠ”ë‹¤.
 
 	virtual void OnGUI(ImGuiIO* pGuiIO);
 
@@ -46,5 +47,7 @@ public:
 	virtual void OnPause() { std::cout << "Scene OnPause" << endl; };
 	virtual void OnResume() { std::cout << "Scene OnResume" << endl; };
 	virtual void OnExit() { std::cout << "Scene OnExit" << endl; };
-};
 
+private:
+	bool m_bMainSceneTransitionStarted = false;
+};

@@ -9,6 +9,7 @@
 #include"GameLogicGlobal.h"
 #include"WorldObjectDB.h"
 #include "ServerNavigation.h"
+#include "AccountDB.h"
 
 PacketHandlerFunc GPacketHandler[UINT16_MAX];
 
@@ -28,8 +29,21 @@ bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {
 	GameSessionRef gameSession = static_pointer_cast<GameSession>(session);
-	if (pkt.accountid().empty() || pkt.password().empty())
-		return false;
+	Protocol::S_LOGIN loginPkt;
+	const AccountAuthResult authResult = AuthenticateOrCreateAccount(pkt.accountid(), pkt.password());
+	if (authResult.result != AccountLoginResult::Success && authResult.result != AccountLoginResult::Created) {
+		loginPkt.set_success(false);
+		session->Send(ClientPacketHandler::MakeSendBuffer(loginPkt));
+		return true;
+	}
+	if (GSessionManager.TryBindAccount(authResult.accountDbId, gameSession) == false) {
+		cout << "[LOGIN] duplicate account=" << pkt.accountid() << endl;
+		loginPkt.set_success(false);
+		session->Send(ClientPacketHandler::MakeSendBuffer(loginPkt));
+		return true;
+	}
+
+	cout << "[LOGIN] account=" << pkt.accountid() << " result=" << (authResult.result == AccountLoginResult::Created ? "created" : "success") << endl;
 
 	//cout << "[Handle_C_LOGIN] Login request received for player id: " << pkt.accountid() << " "<<pkt.password() <<endl;
 	// TODO : Validation 체크
@@ -46,9 +60,10 @@ bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 	{
 		cout << "[WorldInit] DB exists -> load from DB" << endl;
 		GWorld.LoadFromDB();
-	}	Protocol::S_LOGIN loginPkt;
+	}
 	{
 		PlayerRef playerRef = gameSession->_currentPlayer; 
+		loginPkt.set_success(true);
 		auto player = loginPkt.add_players();
 		player->set_id(playerRef->playerId);
 		player->set_playertype(Protocol::PLAYER_TYPE_NONE);

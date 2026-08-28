@@ -20,4 +20,5 @@ public:
 	Vector<PlayerRef> _players;
 	PlayerRef         _currentPlayer;
 	int32 _sessionId = 0;
+	uint64 _accountDbId = 0;
 };

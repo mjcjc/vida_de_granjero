@@ -10,6 +10,7 @@ public:
 	void Add(GameSessionRef session);
 	void Remove(GameSessionRef session);
 	void Broadcast(SendBufferRef sendBuffer);
+	bool TryBindAccount(uint64 accountDbId, const GameSessionRef& session);
 public:
 	template<typename Func>
 	void ForEachSession(Func&& func)
@@ -22,6 +23,7 @@ public:
 private:
 	USE_LOCK;
 	Set<GameSessionRef> _sessions;
+	HashMap<uint64, GameSessionRef> _accountSessions;
 
 };
 

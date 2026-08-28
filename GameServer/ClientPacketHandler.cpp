@@ -28,6 +28,8 @@ bool Handle_INVALID(PacketSessionRef& session, BYTE* buffer, int32 len)
 bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 {
 	GameSessionRef gameSession = static_pointer_cast<GameSession>(session);
+	if (pkt.accountid().empty() || pkt.password().empty())
+		return false;
 
 	//cout << "[Handle_C_LOGIN] Login request received for player id: " << pkt.accountid() << " "<<pkt.password() <<endl;
 	// TODO : Validation 체크
@@ -48,7 +50,7 @@ bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 	{
 		PlayerRef playerRef = gameSession->_currentPlayer; 
 		auto player = loginPkt.add_players();
-		player->set_id(pkt.accountid());
+		player->set_id(playerRef->playerId);
 		player->set_playertype(Protocol::PLAYER_TYPE_NONE);
 		player->mutable_transform()->set_px(0.f);
 		player->mutable_transform()->set_py(0.f);
@@ -79,14 +81,7 @@ bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt)
 	enterGamePkt.set_playerid(myPlayer->playerId);
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(enterGamePkt);
 	GSessionManager.Broadcast(sendBuffer);
-	/*GSessionManager.Broadcast(sendBuffer);
-	Protocol::S_WORLD_STATE sws;
-	sws.set_mission_score(GWorldEnv.GetMissionScore());
-	sws.set_season(GWorldEnv.GetSeason());
-	sws.set_weather(GWorldEnv.GetWeather());
-
-	auto sendBuffers = ClientPacketHandler::MakeSendBuffer(sws);
-	session->Send(sendBuffers);*/
+	GWorldEnv.SendCurrentStateToClient(gameSession.get());
 	Protocol::S_OTHER otherP;
 	otherP.set_p_size(static_cast<uint32>(gameSession->_players.size()));
 	//cout << "현재 접속자 수" << otherP.p_size() << endl;
@@ -440,6 +435,30 @@ bool Handle_C_GATHER_REQ(PacketSessionRef& session, Protocol::C_GATHER_REQ& pkt)
 	return true;
 }
 
+bool Handle_C_DEBUG_WORLD_STATE_CHANGE(
+	PacketSessionRef& session,
+	Protocol::C_DEBUG_WORLD_STATE_CHANGE& pkt)
+{
+	GameSessionRef gameSession = static_pointer_cast<GameSession>(session);
+	if (!gameSession || !gameSession->_currentPlayer)
+		return true;
+
+	if (pkt.season() > static_cast<uint32>(ESeason::Winter) ||
+		pkt.weather() > static_cast<uint32>(EWeather::Fog))
+	{
+		std::cout << "[WORLD_STATE_CHANGE] rejected playerId="
+			<< gameSession->_currentPlayer->playerId
+			<< " season=" << pkt.season()
+			<< " weather=" << pkt.weather() << std::endl;
+		return true;
+	}
+
+	GWorldEnv.ChangeWorldState(
+		static_cast<ESeason>(pkt.season()),
+		static_cast<EWeather>(pkt.weather()));
+	return true;
+}
+
 
 bool Handle_C_SEEDGROWTH(PacketSessionRef& session, Protocol::C_SEEDGROWTH& pkt)
 {
@@ -483,3 +502,5 @@ bool Handle_C_OBEJCT_HP(PacketSessionRef& session, Protocol::C_OBEJCT_HP& pkt)
 	
 	return true;
 }
+
+

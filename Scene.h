@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "GameTimer.h"
 #include "Shader.h"
 #include "SceneManager.h"
@@ -11,7 +11,7 @@ struct PendingMoveInput
 	XMFLOAT3 predictedDelta = { 0.0f, 0.0f, 0.0f };
 };
 
-//³ª¹«, ¹ÙÀ§, Ç®À» ¹èÄ¡ÇÏ´Â ÆÄ½Ì¿ë µ¥ÀÌÅÍ ±¸Á¶
+//ë‚˜ë¬´, ë°”ìœ„, í’€ì„ ë°°ì¹˜í•˜ëŠ” íŒŒì‹±ìš© ë°ì´í„° êµ¬ì¡°
 struct StageSpawnEntry
 {	
 	int temp_id;
@@ -27,7 +27,7 @@ struct StageSpawnData
 };
 
 
-//Light ±¸Á¶Ã¼¸¦ °®°íÀÖÀ¸¸ç Ãæµ¹Ã¼¿Í ÃÊ±âÈ­ °ü·ÃÇØ¼­ °£ÆíÈ­¸¦ À§ÇÑ °´Ã¼
+//Light êµ¬ì¡°ì²´ë¥¼ ê°–ê³ ìˆìœ¼ë©° ì¶©ëŒì²´ì™€ ì´ˆê¸°í™” ê´€ë ¨í•´ì„œ ê°„í¸í™”ë¥¼ ìœ„í•œ ê°ì²´
 class LightControl
 {
 public:
@@ -48,26 +48,26 @@ private:
 };
 
 
-//UpdateShaderVariables¿¡¼­ »ç¿ëÁß
+//UpdateShaderVariablesì—ì„œ ì‚¬ìš©ì¤‘
 struct Toggle
 {
 	bool* state;
 	UINT flag;
 };
 
-struct ImGuiMaterialFlages //ImGui¸¦ ÅëÇØ Shader¿¡ Àü´ŞÇÒ CBV¿¡ ³»¿ëÀ» ´ãÀ» °Í.
+struct ImGuiMaterialFlages //ImGuië¥¼ í†µí•´ Shaderì— ì „ë‹¬í•  CBVì— ë‚´ìš©ì„ ë‹´ì„ ê²ƒ.
 {
-	UINT							m_nMapType = 0x00; // ¾î¶² MapÀ» »ç¿ëÇÒÁö
+	UINT							m_nMapType = 0x00; // ì–´ë–¤ Mapì„ ì‚¬ìš©í• ì§€
 	XMFLOAT3					m_pDummy = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	UINT							m_nLightType = 0x00; // Á¶¸í °è»ê ¹æ½ÄÀ» ¾î¶²°É Àû¿ëÇÒÁö.
+	UINT							m_nLightType = 0x00; // ì¡°ëª… ê³„ì‚° ë°©ì‹ì„ ì–´ë–¤ê±¸ ì ìš©í• ì§€.
 	XMFLOAT3					m_pDummy2 = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	float							m_fpExposure = 0.0f;
 	float							m_fpGamma = 0.0f;
 	float							m_fpRoughness = 0.0f;
 	float							m_fpMetalness = 0.0f;
 	UINT							m_nShadowOnOFF = 0; //False : 0, Ture : 1
-	UINT							m_nSeasonType = 0x00; //¾î¶² °èÀıÀÎÁö
-	UINT							m_nWeatherType = 0x00; //¾î¶² ³¯¾¾ÀÎÁö
+	UINT							m_nSeasonType = 0x00; //ì–´ë–¤ ê³„ì ˆì¸ì§€
+	UINT							m_nWeatherType = 0x00; //ì–´ë–¤ ë‚ ì”¨ì¸ì§€
 };
 
 struct ImGuiComputeFlages
@@ -76,7 +76,7 @@ struct ImGuiComputeFlages
 	XMFLOAT4X4 m_xmf4x4Proj;
 	float m_xmf2Radius;
 	float m_fBias;//
-	UINT m_nType; //SSAO, BloomµîÀ»  On/Off ÇØÁÙÁö
+	UINT m_nType; //SSAO, Bloomë“±ì„  On/Off í•´ì¤„ì§€
 	float BloomThreshold;
 	float BloomSoftKnee;
 	float BloomIntensity;
@@ -125,30 +125,30 @@ public:
 	virtual bool OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 	virtual bool OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
-	//void CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);	//·çÆ® ½Ã±×´ÏÃÄ¸¦ »ı¼ºÇØÁÖ´Â ÇÔ¼ö ==> ÀÌ µÑÀº ³ªÁß¿¡
+	//void CreateGraphicsRootSignature(ID3D12Device* pd3dDevice);	//ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ë¥¼ ìƒì„±í•´ì£¼ëŠ” í•¨ìˆ˜ ==> ì´ ë‘˜ì€ ë‚˜ì¤‘ì—
 
-	virtual void CreateGraphicsPipelineState(ID3D12Device* pd3dDevice);	//PSO¸¦ ¸¸µé¾îÁÖ´Â ÇÔ¼ö. ==> ¿ÜºÎ Å¬·¡½º È¤Àº
-	//stdafx·Î »©³»°Å³ª ¾Æ´Ï¸é Scene Manager¸¦ ¸¸µé¾î º°°³·Î »©µÑ °èÈ¹ÀÌ´Ù. ¿©·¯ SceneÀ» LoadÇÏ°í °ü¸®ÇÒ·Á¸é
-	//»ı¼º°ü·ÃµÈ ÇÔ¼ö´Â °ø¿ëÀ¸·Î ¼³°èÇÏ´Â°Ô °¡Àå ÁÁÀ¸´Ï±î.
-	//¾Æ´Ï¸é ÀÌ Scene Å¬·¡½º¸¦ Scene Manager Ã³·³ »ç¿ëÇÏ°í ´Ù¸¥ Scene Å¬·¡½º¸¦ ¸¸µé¾î¼­ ¼³°èÇØµµ ÁÁÀ» µí ÇÏ´Ù.
-	//GameFramework¿¡¼­ ¸ğµÎ ÇÑ ¹ø¿¡ Ã³¸®ÇÏµµ·Ï ¼³°èÇÏ´Â °Íµµ ³ª»ÚÁö ¾ÊÀ»µí??
-	//¹°·Ğ Scene¿¡ »ç¿ëµÇ´Â ¸®¼Ò½º¿¡ ·®¿¡ µû¶ó¼­ È¤Àº ´Ù¸¥ ·çÆ® PSO °¡ ÇÊ¿äÇÑ °æ¿ì°¡ ÀÖÀ¸´Ï ÀÌ°Ç Á» ´õ °í·ÁÇØ ºÁ¾ß ÇÑ´Ù.
-	//ÀÌ ¹®±¸´Â Ç×»ó ÀĞ¾îºÁ¶ó 2025.02.15 ÀÛ¼º
-	// Scene±¸Á¶¸¦ ½ºÅÃ ±¸Á¶·Î ¹Ù²Ù¾î »ç¿ëÇÒ ¿¹Á¤À¸·Î º¯°æ.
-	// ·çÆ® ½Ã±×´ÏÃÄ¿Í ·çÆ® ÆÄ¶ó¹ÌÅÍ¿Í °°Àº°ÍµéÀº º°°èÀÇ À¯Æ¿ Å¬·¡½º·Î ±¸º°ÇÏ¿© staticÀ¸·Î ¸¸µé¾î »óÈ²¿¡µû¶ó Scene¿¡¼­ ¼±ÅÃÇÏµµ·Ï º¯°æ¿¹Á¤
-	// ÀÌ ¹®±¸´Â 2025.05.31 ÀÛ¼º
+	virtual void CreateGraphicsPipelineState(ID3D12Device* pd3dDevice);	//PSOë¥¼ ë§Œë“¤ì–´ì£¼ëŠ” í•¨ìˆ˜. ==> ì™¸ë¶€ í´ë˜ìŠ¤ í˜¹ì€
+	//stdafxë¡œ ë¹¼ë‚´ê±°ë‚˜ ì•„ë‹ˆë©´ Scene Managerë¥¼ ë§Œë“¤ì–´ ë³„ê°œë¡œ ë¹¼ë‘˜ ê³„íšì´ë‹¤. ì—¬ëŸ¬ Sceneì„ Loadí•˜ê³  ê´€ë¦¬í• ë ¤ë©´
+	//ìƒì„±ê´€ë ¨ëœ í•¨ìˆ˜ëŠ” ê³µìš©ìœ¼ë¡œ ì„¤ê³„í•˜ëŠ”ê²Œ ê°€ì¥ ì¢‹ìœ¼ë‹ˆê¹Œ.
+	//ì•„ë‹ˆë©´ ì´ Scene í´ë˜ìŠ¤ë¥¼ Scene Manager ì²˜ëŸ¼ ì‚¬ìš©í•˜ê³  ë‹¤ë¥¸ Scene í´ë˜ìŠ¤ë¥¼ ë§Œë“¤ì–´ì„œ ì„¤ê³„í•´ë„ ì¢‹ì„ ë“¯ í•˜ë‹¤.
+	//GameFrameworkì—ì„œ ëª¨ë‘ í•œ ë²ˆì— ì²˜ë¦¬í•˜ë„ë¡ ì„¤ê³„í•˜ëŠ” ê²ƒë„ ë‚˜ì˜ì§€ ì•Šì„ë“¯??
+	//ë¬¼ë¡  Sceneì— ì‚¬ìš©ë˜ëŠ” ë¦¬ì†ŒìŠ¤ì— ëŸ‰ì— ë”°ë¼ì„œ í˜¹ì€ ë‹¤ë¥¸ ë£¨íŠ¸ PSO ê°€ í•„ìš”í•œ ê²½ìš°ê°€ ìˆìœ¼ë‹ˆ ì´ê±´ ì¢€ ë” ê³ ë ¤í•´ ë´ì•¼ í•œë‹¤.
+	//ì´ ë¬¸êµ¬ëŠ” í•­ìƒ ì½ì–´ë´ë¼ 2025.02.15 ì‘ì„±
+	// Sceneêµ¬ì¡°ë¥¼ ìŠ¤íƒ êµ¬ì¡°ë¡œ ë°”ê¾¸ì–´ ì‚¬ìš©í•  ì˜ˆì •ìœ¼ë¡œ ë³€ê²½.
+	// ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ì™€ ë£¨íŠ¸ íŒŒë¼ë¯¸í„°ì™€ ê°™ì€ê²ƒë“¤ì€ ë³„ê³„ì˜ ìœ í‹¸ í´ë˜ìŠ¤ë¡œ êµ¬ë³„í•˜ì—¬ staticìœ¼ë¡œ ë§Œë“¤ì–´ ìƒí™©ì—ë”°ë¼ Sceneì—ì„œ ì„ íƒí•˜ë„ë¡ ë³€ê²½ì˜ˆì •
+	// ì´ ë¬¸êµ¬ëŠ” 2025.05.31 ì‘ì„±
 
 
-	////////////TextureÀû¿ëÀ» À§ÇØ¼­
+	////////////Textureì ìš©ì„ ìœ„í•´ì„œ
 
 	/*
-	* CreateCbvSrvDescriptorHeaps¸¦ ¸ÕÀú ¼±¾ğÇØ¼­, »ó¼ö¹öÆÛ µÚ¿¡ SRV¸¦ ¹ÙÀÎµùÇÒ
-	* Æ÷ÀÎÅÍ À§Ä¡¸¦ ÁöÁ¤ÇØÁØ´Ù
+	* CreateCbvSrvDescriptorHeapsë¥¼ ë¨¼ì € ì„ ì–¸í•´ì„œ, ìƒìˆ˜ë²„í¼ ë’¤ì— SRVë¥¼ ë°”ì¸ë”©í• 
+	* í¬ì¸í„° ìœ„ì¹˜ë¥¼ ì§€ì •í•´ì¤€ë‹¤
 	*
 	*/
 
-	CTexture* m_pRenderTexture; // RTV, SRV, UAR µîµî È°¿ëÇÒ¶§ »ç¿ëÇÒ Ä£±¸
-	CTexture* m_pComputeRenderTexture; // SSAO¿¡ G-buffer·Î »ç¿ëÇØ¼­ ³Ñ°ÜÁÙ Render Texture
+	CTexture* m_pRenderTexture; // RTV, SRV, UAR ë“±ë“± í™œìš©í• ë•Œ ì‚¬ìš©í•  ì¹œêµ¬
+	CTexture* m_pComputeRenderTexture; // SSAOì— G-bufferë¡œ ì‚¬ìš©í•´ì„œ ë„˜ê²¨ì¤„ Render Texture
 
 	CTexture* m_pShadowDepthTexture;
 
@@ -164,12 +164,12 @@ public:
 	static void CreateShaderResourceView(ID3D12Device* pd3dDevice, CTexture* pTexture, int nIndex);
 	static D3D12_GPU_DESCRIPTOR_HANDLE CreateStructureBufferSRV(ID3D12Device* pd3dDevice, ID3D12Resource* pd3dResource,UINT nElementCount,UINT nStructureStride);
 
-	static D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateShaderResourceView(ID3D12Device* pd3dDevice, ID3D12Resource* pd3dResource, DXGI_FORMAT dxgiSrvFormat); //±íÀÌ¸Ê °°ÀÌ µû·Î ¸®¼Ò½º¸¦ °®°íÀÖ´Â Ä£±¸¿¡ °æ¿ì ÀÌ°É·Î Ã³¸®
+	static D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateShaderResourceView(ID3D12Device* pd3dDevice, ID3D12Resource* pd3dResource, DXGI_FORMAT dxgiSrvFormat); //ê¹Šì´ë§µ ê°™ì´ ë”°ë¡œ ë¦¬ì†ŒìŠ¤ë¥¼ ê°–ê³ ìˆëŠ” ì¹œêµ¬ì— ê²½ìš° ì´ê±¸ë¡œ ì²˜ë¦¬
 	//UAV
 	static void CreateUnorderedAccessView(ID3D12Device* pd3dDevice,CTexture* pTexture, DXGI_FORMAT* pdxgiFormat,UINT nDescriptorHeapIndex,UINT nRootParameterStartIndex);
 	static D3D12_GPU_DESCRIPTOR_HANDLE CreateStructureBufferUAV(ID3D12Device* pd3dDevice,ID3D12Resource* pd3dResource,UINT nElementCount,UINT nStructureStride);
 
-	//Render Target view¿Í Srv¸¦ µ¿½Ã¿¡ ¿¬°áÇØÁÖ´Â ÇÔ¼ö
+	//Render Target viewì™€ Srvë¥¼ ë™ì‹œì— ì—°ê²°í•´ì£¼ëŠ” í•¨ìˆ˜
 	void CreateShaderResourceViewRtvs(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList,
 		UINT nRenderTargets, DXGI_FORMAT* pdxgiFormats, D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle);
 	
@@ -181,7 +181,7 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE* m_pd3dRtvCPUDescriptorHandles = NULL;
 	D3D12_CPU_DESCRIPTOR_HANDLE* m_pd3dG_bufferRtvCPUDescriptorHandles = NULL;
 	D3D12_CPU_DESCRIPTOR_HANDLE* m_pd3dSahdowMapDsvCPUDescriptorHandles = NULL;
-	D3D12_GPU_DESCRIPTOR_HANDLE m_pd3dDefaultDepthMapSrvDescrptorHandles; //±âº» ±íÀÌ¸ÊÀÇ SRV Handle
+	D3D12_GPU_DESCRIPTOR_HANDLE m_pd3dDefaultDepthMapSrvDescrptorHandles; //ê¸°ë³¸ ê¹Šì´ë§µì˜ SRV Handle
 
 	ID3D12Resource* m_pDefaultDepthStancilResource = NULL;
 
@@ -207,52 +207,52 @@ public:
 	virtual void BuildObjects(ID3D12Device* pd3dDeivce, ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void InitLights();
 
-	virtual void ReleaseObjects(); //Ç×»ó »ı¼ºÇÏ´Â ¿ÀºêÁ§Æ®°¡ Á¸ÀçÇÑ´Ù¸é, »èÁ¦µµ ´ç¿¬È÷ Á¸ÀçÇØ¾ßÇÑ´Ù.
+	virtual void ReleaseObjects(); //í•­ìƒ ìƒì„±í•˜ëŠ” ì˜¤ë¸Œì íŠ¸ê°€ ì¡´ì¬í•œë‹¤ë©´, ì‚­ì œë„ ë‹¹ì—°íˆ ì¡´ì¬í•´ì•¼í•œë‹¤.
 
-	virtual void PreviousTransform(); //ÀÌÀü ÇÁ·¹ÀÓ¿¡ µ¿ÀÛµîÀ» ÀúÀåÃ³¸®ÇÒ ÇÔ¼ö
+	virtual void PreviousTransform(); //ì´ì „ í”„ë ˆì„ì— ë™ì‘ë“±ì„ ì €ì¥ì²˜ë¦¬í•  í•¨ìˆ˜
 	virtual bool ProcessInput();	//
 	virtual void AnimateObjects(float fTimeElapsed);	//
 
-	virtual void PrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);	//Render¸¦ ÇÏ±âÀü PSO³ª ·çÆ® ½Ã±×´ÏÃÄ µîÀ»
-	//¿¬°áÀ» ÇØÁà¾ß ÇÏ´Âµ¥ ÀÌ·¯ÇÑ °øÅë ¼³Á¤µîÀ» ¹Ì¸® ¿¬°áÇØÁÖ´Â°É Ç×»ó ÇØ¾ß ÇÑ´Ù.
+	virtual void PrepareRender(ID3D12GraphicsCommandList* pd3dCommandList);	//Renderë¥¼ í•˜ê¸°ì „ PSOë‚˜ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ ë“±ì„
+	//ì—°ê²°ì„ í•´ì¤˜ì•¼ í•˜ëŠ”ë° ì´ëŸ¬í•œ ê³µí†µ ì„¤ì •ë“±ì„ ë¯¸ë¦¬ ì—°ê²°í•´ì£¼ëŠ”ê±¸ í•­ìƒ í•´ì•¼ í•œë‹¤.
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);		//
 
-	//Shadow¸¦ ±×¸± Ä£±¸µé¸¸
+	//Shadowë¥¼ ê·¸ë¦´ ì¹œêµ¬ë“¤ë§Œ
 	virtual void OnlyShadowRender(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 	virtual void PrePareShadowMap(ID3D12GraphicsCommandList* pd3dCommandList);
-	//±×¸²ÀÚ¸¦ ±×¸®±â À§ÇÑ ÁØºñ È¤Àº ±×¸®´Â °úÁ¤ µîµî ¸ŞÀÎ ¿ÀºêÁ§Æ® ±×¸®±âÀü µ¿ÀÛ
+	//ê·¸ë¦¼ìë¥¼ ê·¸ë¦¬ê¸° ìœ„í•œ ì¤€ë¹„ í˜¹ì€ ê·¸ë¦¬ëŠ” ê³¼ì • ë“±ë“± ë©”ì¸ ì˜¤ë¸Œì íŠ¸ ê·¸ë¦¬ê¸°ì „ ë™ì‘
 	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList,int nRenderTargets, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dRtvCPUHandles, 
 		D3D12_CPU_DESCRIPTOR_HANDLE* pd3dDsvCPUHandle, CCamera* pCamera);
-	//¸ŞÀÎ µ¿ÀÛ
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);	//Render¸¦ ÇÒ¶§ ¿©·¯ Ä«¸Ş¶ó°¡ Á¸ÀçÇÒ ¼ö ÀÖ°í, Ä«¸Ş¶ó¿¡ µû¶ó °ªÀÌ ´Ş¶óÁú ¼ö ÀÖÀ½À¸·Î Camera¸¦ ÆÄ¶ó¹ÌÅÍ·Î ¹Ş´Â´Ù.
-	//ÃÖÁ¾ÀûÀ¸·Î Ãâ·Â ¹× Æ÷½ºÆ® ÇÁ·Î¼¼½Ì µ¿ÀÛÀ» À§ÇÑ Render 
+	//ë©”ì¸ ë™ì‘
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);	//Renderë¥¼ í• ë•Œ ì—¬ëŸ¬ ì¹´ë©”ë¼ê°€ ì¡´ì¬í•  ìˆ˜ ìˆê³ , ì¹´ë©”ë¼ì— ë”°ë¼ ê°’ì´ ë‹¬ë¼ì§ˆ ìˆ˜ ìˆìŒìœ¼ë¡œ Cameraë¥¼ íŒŒë¼ë¯¸í„°ë¡œ ë°›ëŠ”ë‹¤.
+	//ìµœì¢…ì ìœ¼ë¡œ ì¶œë ¥ ë° í¬ìŠ¤íŠ¸ í”„ë¡œì„¸ì‹± ë™ì‘ì„ ìœ„í•œ Render 
 	virtual void OnPostRender(ID3D12GraphicsCommandList* pd3dCommandList, int nRenderTargets, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dRtvCPUHandles
 		, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dDsvCPUHandle,CCamera* pCamera);
 
-	virtual void OnGUI(ImGuiIO* pGuiIO); //Scene¸¶´Ù GUI ¼³Á¤À» ´Ş¸® ÇÏ±â À§ÇØ¼­
+	virtual void OnGUI(ImGuiIO* pGuiIO); //Sceneë§ˆë‹¤ GUI ì„¤ì •ì„ ë‹¬ë¦¬ í•˜ê¸° ìœ„í•´ì„œ
 
 	virtual void ReleaseUploadBuffers();
 
-	//virtual ID3D12RootSignature* CreateGraphicsRootSignature(ID3D12Device* pd3dDevice); //·çÆ® ½Ã±×´ÏÃÄ¸¦ »ı¼ºÇØÁÖ°í ¹İÈ¯
-	virtual ID3D12RootSignature* GetGraphicsRootSignature(); //ÀúÀåÇÏ°í ÀÖ´Â ·çÆ® ½Ã±×´ÏÃÄ¸¦ ¹İÈ¯
+	//virtual ID3D12RootSignature* CreateGraphicsRootSignature(ID3D12Device* pd3dDevice); //ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ë¥¼ ìƒì„±í•´ì£¼ê³  ë°˜í™˜
+	virtual ID3D12RootSignature* GetGraphicsRootSignature(); //ì €ì¥í•˜ê³  ìˆëŠ” ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³ë¥¼ ë°˜í™˜
 	
 	/*
-	* ImGui ¼³Á¤À» ³Ñ±â±â À§ÇÑ ShaderVariables·Î register¹øÈ£´Â Ç×»ó 4¸¦ À¯ÁöÇÑ´Ù
+	* ImGui ì„¤ì •ì„ ë„˜ê¸°ê¸° ìœ„í•œ ShaderVariablesë¡œ registerë²ˆí˜¸ëŠ” í•­ìƒ 4ë¥¼ ìœ ì§€í•œë‹¤
 	*/
 	virtual void CreateShaderVariables(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList);
 	virtual void ReleaseShaderVariables();
 
-	ComPtr<ID3D12RootSignature> m_pd3dRootSignature;	//·çÆ® ½Ã±×´ÏÃÄ
-	ComPtr<ID3D12RootSignature> m_cpd3dComputeRootSignature;//ÄÄÇ»Æ® ÆÄÀÌÇÁ¶óÀÎÀ» À§ÇÑ ·çÆ® ½Ã±×´ÏÃÄ
-	ComPtr<ID3D12PipelineState> m_pd3dPipelineState;	//±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ ¸¸ÀÏ Compute ÆÄÀÌÇÁ¶óÀÎÀÌ¸é °°Àº º¯¼öÁö¸¸ º°°è·Î
-	//³»ºÎ¸¦ ¼³Á¤ÇØÁà¾ß ÇÑ´Ù.
+	ComPtr<ID3D12RootSignature> m_pd3dRootSignature;	//ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³
+	ComPtr<ID3D12RootSignature> m_cpd3dComputeRootSignature;//ì»´í“¨íŠ¸ íŒŒì´í”„ë¼ì¸ì„ ìœ„í•œ ë£¨íŠ¸ ì‹œê·¸ë‹ˆì³
+	ComPtr<ID3D12PipelineState> m_pd3dPipelineState;	//ê·¸ë˜í”½ íŒŒì´í”„ë¼ì¸ ë§Œì¼ Compute íŒŒì´í”„ë¼ì¸ì´ë©´ ê°™ì€ ë³€ìˆ˜ì§€ë§Œ ë³„ê³„ë¡œ
+	//ë‚´ë¶€ë¥¼ ì„¤ì •í•´ì¤˜ì•¼ í•œë‹¤.
 
 	ComPtr<ID3D12Device> m_cpd3dDevice;
 	ComPtr<ID3D12GraphicsCommandList> m_cpd3dCommandList;
 
 
-	//SceneÀÇ Stack º¯È­¿¡ µû¸¥ »óÅÂ º¯È­¸¦ ¾Ë¸®´Â °Íµé.
+	//Sceneì˜ Stack ë³€í™”ì— ë”°ë¥¸ ìƒíƒœ ë³€í™”ë¥¼ ì•Œë¦¬ëŠ” ê²ƒë“¤.
 	virtual void OnEnter() { std::cout << "Scene OnEnter"<<endl; };
 	virtual void OnPause() { std::cout << "Scene OnPause" << endl; };
 	virtual void OnResume() { std::cout << "Scene OnResume" << endl; };
@@ -262,36 +262,36 @@ public:
 	HWND m_hWnd;
 
 	float								m_fElapsedTime = 0.0f;
-	float								m_fTime = 0.0f; //ÇöÀç Áö³ª°¡°í ÀÖ´Â ½Ã°£
+	float								m_fTime = 0.0f; //í˜„ì¬ ì§€ë‚˜ê°€ê³  ìˆëŠ” ì‹œê°„
 	//
 public:
 
-	//°èÃş ±¸Á¶¸¦ À§ÇØ Ãß°¡ÇÑ GameObject
+	//ê³„ì¸µ êµ¬ì¡°ë¥¼ ìœ„í•´ ì¶”ê°€í•œ GameObject
 	int m_nHierarchicalGameObjects = 0;
 	vector<CGameObject*> m_ppHierarchicalGameObjects ;
 
 
-	ObjectID m_nIDPool = 0; //Å¬¶óÀÌ¾ğÆ® ÀÚÃ¼ÀûÀ¸·Î ID°¡ °ãÄ¡Áö ¾Êµµ·Ï °è¼Ó Ãß°¡ µÇ´Â ¾ÖµéÀº ++µÉ ¿¹Á¤
+	ObjectID m_nIDPool = 0; //í´ë¼ì´ì–¸íŠ¸ ìì²´ì ìœ¼ë¡œ IDê°€ ê²¹ì¹˜ì§€ ì•Šë„ë¡ ê³„ì† ì¶”ê°€ ë˜ëŠ” ì• ë“¤ì€ ++ë  ì˜ˆì •
 
-	CObjectPool<CAnimatedObject> m_AnimatedObjectPool; //±âº» ¾Ö´Ï¸ŞÀÌ¼Ç ¿ÀºêÁ§Æ® Ç®
-	CObjectPool<CDefaultGameObject> m_DefaultObjectPool; //±âº» ÀÏ¹İ ¿ÀºêÁ§Æ® Ç®
+	CObjectPool<CAnimatedObject> m_AnimatedObjectPool; //ê¸°ë³¸ ì• ë‹ˆë©”ì´ì…˜ ì˜¤ë¸Œì íŠ¸ í’€
+	CObjectPool<CDefaultGameObject> m_DefaultObjectPool; //ê¸°ë³¸ ì¼ë°˜ ì˜¤ë¸Œì íŠ¸ í’€
 
-	//¿ÀºêÁ§Æ® Ç®¸µÀ» »ç¿ëÇØ¼­ ¿ÀºêÁ§Æ®¸¦ ÃÊ±âÈ­ ¹× »ı¼º ±×¸®°í Á¦°Å ÇÏ´Â ÇÔ¼öµé
+	//ì˜¤ë¸Œì íŠ¸ í’€ë§ì„ ì‚¬ìš©í•´ì„œ ì˜¤ë¸Œì íŠ¸ë¥¼ ì´ˆê¸°í™” ë° ìƒì„± ê·¸ë¦¬ê³  ì œê±° í•˜ëŠ” í•¨ìˆ˜ë“¤
 	template<typename T>
 	T* SpawnAnimateObject(CObjectPool<T>& objectPool, CLoadedModelInfo* pPrefab, EObjectTag tag, ObjectID id, int nAnimationTracks)
 	{
 		T* obj = objectPool.Acquire(m_cpd3dDevice.Get(), m_cpd3dCommandList.Get(), m_pd3dRootSignature.Get(),
 			pPrefab, nAnimationTracks);
 
-		obj->SetTag(tag); //³í¸®Àû Tag
+		obj->SetTag(tag); //ë…¼ë¦¬ì  Tag
 
-		obj->SetID(id); //°íÀ¯ ID
+		obj->SetID(id); //ê³ ìœ  ID
 
-		obj->SetType(pPrefab->m_ObjectType); //¾î¶² ¸ğµ¨ ÇüÅÂÀÇ TypeÀ» »ç¿ëÇÏ°íÀÖ´ÂÁö ÁöÁ¤.
+		obj->SetType(pPrefab->m_ObjectType); //ì–´ë–¤ ëª¨ë¸ í˜•íƒœì˜ Typeì„ ì‚¬ìš©í•˜ê³ ìˆëŠ”ì§€ ì§€ì •.
 
 		if (m_nHierarchicalGameObjects >= m_ppHierarchicalGameObjects.size())
 		{
-			// ³ÑÃÆÀ¸´Ï±î ÀÚµ¿ È®Àå
+			// ë„˜ì³¤ìœ¼ë‹ˆê¹Œ ìë™ í™•ì¥
 			m_ppHierarchicalGameObjects.push_back(obj);
 		}
 		else
@@ -318,7 +318,7 @@ public:
 
 		if (m_nHierarchicalGameObjects >= m_ppHierarchicalGameObjects.size())
 		{
-			// ³ÑÃÆÀ¸´Ï±î ÀÚµ¿ È®Àå
+			// ë„˜ì³¤ìœ¼ë‹ˆê¹Œ ìë™ í™•ì¥
 			m_ppHierarchicalGameObjects.push_back(obj);
 		}
 		else
@@ -375,7 +375,7 @@ public:
 
 protected:
 
-	//CTexture* m_pRenderTexture = NULL; // RTV, SRV, UAR µîµî È°¿ëÇÒ¶§ »ç¿ëÇÒ Ä£±¸
+	//CTexture* m_pRenderTexture = NULL; // RTV, SRV, UAR ë“±ë“± í™œìš©í• ë•Œ ì‚¬ìš©í•  ì¹œêµ¬
 	unique_ptr<ClientNetwork> m_upClientNetwork;
 
 	ComPtr<ID3D12Resource> m_cpd3dcbImGui_Info;
@@ -391,15 +391,15 @@ protected:
 	SSAOKernelCB* m_pcbSSAOKernel;
 
 
-	//CShader¾È¿¡µµ ¿ÀºêÁ§Æ®°¡ ÀÖ´Âµ¥ ¹Ø¿¡ ¿ÀºêÁ§Æ®¸¦ »ç¿ëÇÏ´Â µ¿¾È¿¡´Â ¾²Áö ¾Ê¾Æ¾ß ÇÑ´Ù.
+	//CShaderì•ˆì—ë„ ì˜¤ë¸Œì íŠ¸ê°€ ìˆëŠ”ë° ë°‘ì— ì˜¤ë¸Œì íŠ¸ë¥¼ ì‚¬ìš©í•˜ëŠ” ë™ì•ˆì—ëŠ” ì“°ì§€ ì•Šì•„ì•¼ í•œë‹¤.
 	CShader** m_ppShader = NULL;
 	//int m_nShaders = 0;
 
-	//¹èÄ¡(Batch) Ã³¸®¸¦ ÇÏ±â À§ÇÑ Shader
+	//ë°°ì¹˜(Batch) ì²˜ë¦¬ë¥¼ í•˜ê¸° ìœ„í•œ Shader
 	CObjectsShader* m_pShaders = NULL;
 	int m_nShaders = 0;
 
-	//°ÔÀÓ ¿ÀºêÁ§Æ®¸¦ ¾ÀÀÌ Á÷Á¢ °¡Áö°í ÀÖ´Â ±¸Á¶·Î ¹Ù²ã¼­ Å×½ºÆ®ÇÏ±â À§ÇØ Ãß°¡µÈ ºÎºĞ.
+	//ê²Œì„ ì˜¤ë¸Œì íŠ¸ë¥¼ ì”¬ì´ ì§ì ‘ ê°€ì§€ê³  ìˆëŠ” êµ¬ì¡°ë¡œ ë°”ê¿”ì„œ í…ŒìŠ¤íŠ¸í•˜ê¸° ìœ„í•´ ì¶”ê°€ëœ ë¶€ë¶„.
 	CGameObject** m_ppObjects = NULL;
 	int m_nObjects = 0;
 
@@ -407,20 +407,20 @@ protected:
 
 	//
 
-	int m_nCBVCount = 0; //CBV Heap¿¡ µé¾î°¥ CBV °¹¼ö ¿ÀºêÁ§Æ® °¹¼ö
-	int m_nSRVCount = 0; //Texture ¸î°³ ¾µ²«Áö
+	int m_nCBVCount = 0; //CBV Heapì— ë“¤ì–´ê°ˆ CBV ê°¯ìˆ˜ ì˜¤ë¸Œì íŠ¸ ê°¯ìˆ˜
+	int m_nSRVCount = 0; //Texture ëª‡ê°œ ì“¸ê»€ì§€
 
-	//ÇöÀç Material¿¡ ¾î¶² TextureMapÀ» Àû¿ë½ÃÅ³Áö ¸»Áö On/OFF
+	//í˜„ì¬ Materialì— ì–´ë–¤ TextureMapì„ ì ìš©ì‹œí‚¬ì§€ ë§ì§€ On/OFF
 
 
 	public:
-		//ÆÄÀÏ·Î ºÎÅÍ TextureÀÇ ÃÑ °¹¼ö¸¦ ÀĞ¾î¿Í ¹İÈ¯ÇØÁÖ´Â °Í.
+		//íŒŒì¼ë¡œ ë¶€í„° Textureì˜ ì´ ê°¯ìˆ˜ë¥¼ ì½ì–´ì™€ ë°˜í™˜í•´ì£¼ëŠ” ê²ƒ.
 		int CountTexturesFromFiles(ID3D12Device* pd3dDevice,
 			ID3D12GraphicsCommandList* pd3dCommandList,
 			ID3D12RootSignature* pd3dGraphicsRootSignature, const std::vector<const char*>& fileList);
 
 	public:
-		//ImGui¿¡¼­ Flag °ªÀ¸·Î ÀçÁú, Á¶¸í ¿µÇâÀ» ¾î´À°ÍµéÀ» Àû¿ëÇÒÁö ¿¬°áÇØµĞ 
+		//ImGuiì—ì„œ Flag ê°’ìœ¼ë¡œ ì¬ì§ˆ, ì¡°ëª… ì˜í–¥ì„ ì–´ëŠê²ƒë“¤ì„ ì ìš©í• ì§€ ì—°ê²°í•´ë‘” 
 		void SetMaterialType(UINT ntype) { m_pcbMaterialFlages->m_nMapType |= ntype; }
 		void UnsetMaterialType(UINT nType) { m_pcbMaterialFlages->m_nMapType &= ~nType; }
 		void SetLightType(UINT ntype) { m_pcbMaterialFlages->m_nLightType |= ntype; }
@@ -444,20 +444,20 @@ protected:
 		bool m_bIsUseambient = false;
 		bool m_bIsUseDirectionLight = true;
 
-		//°èÀı
+		//ê³„ì ˆ
 		int m_nSeasonIndex = 0; // spring : 0, Summer : 1, Fall : 2, Winter : 3
 
 		int m_nBuildingObjectIndex = 0; // Wall : 0, Floor : 1, Ceiling : 2 
-		int m_nPreviousBuildingObjectIndex = -1; //ÀÌÀü¿¡ ¼±ÅÃÇß´ø°Å
+		int m_nPreviousBuildingObjectIndex = -1; //ì´ì „ì— ì„ íƒí–ˆë˜ê±°
 
-		//³¯¾¾
+		//ë‚ ì”¨
 		int m_nWeather = 0;  // Sunny : 0, rain : 1, snow : 2, dust : 3, 4 : Fog
 
-		//ToonMappingÀ» À§ÇÑ ºÎºĞ
+		//ToonMappingì„ ìœ„í•œ ë¶€ë¶„
 		float m_fpExposure = 1.0f;
 		float m_fpGamma = 2.2f;
 
-		//PBR Å×½ºÆ®
+		//PBR í…ŒìŠ¤íŠ¸
 		float m_fpRoughnessValue = 0.0f;
 		float m_fpMetalness = 0.0f;
 
@@ -474,16 +474,16 @@ protected:
 		float m_fBloomSoftKnee = 0;
 		float m_fBloomIntensity = 1.0f;
 
-		//Á¡¼ö
+		//ì ìˆ˜
 		float m_fScore;
 
 
 		int m_nLights = 0;
 		Light* m_pLights = NULL;
 		vector<LightControl> m_vectorLightControl;
-		//vector<Light> m_vectorLights; //µ¿Àû Á¶¸íÀ¸·Î Á¶¸í ¸ğµ¨ ¿ÀºêÁ§Æ®¸¦ Ãß°¡ÇÏ°í³ª¼­ È°¾àÇÒ ¿¹Á¤
+		//vector<Light> m_vectorLights; //ë™ì  ì¡°ëª…ìœ¼ë¡œ ì¡°ëª… ëª¨ë¸ ì˜¤ë¸Œì íŠ¸ë¥¼ ì¶”ê°€í•˜ê³ ë‚˜ì„œ í™œì•½í•  ì˜ˆì •
 
-		//IBLÀ» À§ÇÑ ºÎºĞ
+		//IBLì„ ìœ„í•œ ë¶€ë¶„
 		CTexture* m_pIBLBRDFTexture = NULL;
 		CTexture* m_pIBLSpecluarTexture = NULL;
 		CTexture* m_pIBLIrradianceTexture = NULL;
@@ -493,12 +493,12 @@ protected:
 		CTexture* m_pIBLIrradianceTextureCloud = NULL;
 
 
-		//obb´Â ºÎµúÄ£ ¿ÀºêÁ§Æ®ÀÇ obb, point´Â ÇÃ·¹ÀÌ¾îÀÇ obb Áß½ÉÁ¡ 
+		//obbëŠ” ë¶€ë”ªì¹œ ì˜¤ë¸Œì íŠ¸ì˜ obb, pointëŠ” í”Œë ˆì´ì–´ì˜ obb ì¤‘ì‹¬ì  
 		XMVECTOR ClosetPointOnOBB(BoundingOrientedBox& obb, XMVECTOR point);
 
 		virtual void CreateSSAOKernel();
 
-		//Å¬·¯½ºÅÍµå ·»´õ¸µ¿¡ »ç¿ëÇÒ ±¸Á¶Ã¼ ¹öÆÛ GPU ÇÚµé
+		//í´ëŸ¬ìŠ¤í„°ë“œ ë Œë”ë§ì— ì‚¬ìš©í•  êµ¬ì¡°ì²´ ë²„í¼ GPU í•¸ë“¤
 		D3D12_GPU_DESCRIPTOR_HANDLE m_hClusterLightListUav;
 		D3D12_GPU_DESCRIPTOR_HANDLE m_hClusterLightListSrv;
 		
@@ -512,7 +512,7 @@ protected:
 		ComPtr<ID3D12Resource> m_cpcbCluster;
 		ClusterCB* m_pcbCluster = nullptr;
 
-		XMUINT3 m_ClusterDim = XMUINT3(32, 32, 24); //¾î¶»°Ô Å¬·¯½ºÅÍµå¸¦ ÂÉ°¶Áö
+		XMUINT3 m_ClusterDim = XMUINT3(32, 32, 24); //ì–´ë–»ê²Œ í´ëŸ¬ìŠ¤í„°ë“œë¥¼ ìª¼ê°¤ì§€
 
 		public:
 			void SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState state,
@@ -521,8 +521,8 @@ protected:
 				uint32 lastProcessedSequence);
 
 			// Login
-			int m_szLoginID =  0;
-			int m_szLoginPW =  0;
+			char m_szLoginID[64] = {};
+			char m_szLoginPW[64] = {};
 
 			bool m_bLoginFailed = false;
 			bool m_bLoginRequesting = false;

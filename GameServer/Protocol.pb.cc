@@ -19,8 +19,8 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace Protocol {
 constexpr C_LOGIN::C_LOGIN(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
-  : accountid_(uint64_t{0u})
-  , password_(uint64_t{0u}){}
+  : accountid_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string)
+  , password_(&::PROTOBUF_NAMESPACE_ID::internal::fixed_address_empty_string){}
 struct C_LOGINDefaultTypeInternal {
   constexpr C_LOGINDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -159,6 +159,19 @@ struct S_WORLD_STATEDefaultTypeInternal {
   };
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT S_WORLD_STATEDefaultTypeInternal _S_WORLD_STATE_default_instance_;
+constexpr C_DEBUG_WORLD_STATE_CHANGE::C_DEBUG_WORLD_STATE_CHANGE(
+  ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
+  : season_(0u)
+  , weather_(0u){}
+struct C_DEBUG_WORLD_STATE_CHANGEDefaultTypeInternal {
+  constexpr C_DEBUG_WORLD_STATE_CHANGEDefaultTypeInternal()
+    : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
+  ~C_DEBUG_WORLD_STATE_CHANGEDefaultTypeInternal() {}
+  union {
+    C_DEBUG_WORLD_STATE_CHANGE _instance;
+  };
+};
+PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT C_DEBUG_WORLD_STATE_CHANGEDefaultTypeInternal _C_DEBUG_WORLD_STATE_CHANGE_default_instance_;
 constexpr S_WORLD_INIT::S_WORLD_INIT(
   ::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized)
   : objects_(){}
@@ -263,7 +276,7 @@ struct S_PLAYER_DESPAWNDefaultTypeInternal {
 };
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT S_PLAYER_DESPAWNDefaultTypeInternal _S_PLAYER_DESPAWN_default_instance_;
 }  // namespace Protocol
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_Protocol_2eproto[18];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_Protocol_2eproto[19];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_Protocol_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_Protocol_2eproto = nullptr;
 
@@ -351,6 +364,13 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_Protocol_2eproto::offsets[] PR
   PROTOBUF_FIELD_OFFSET(::Protocol::S_WORLD_STATE, weather_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_WORLD_STATE, mission_score_),
   ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_DEBUG_WORLD_STATE_CHANGE, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_DEBUG_WORLD_STATE_CHANGE, season_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::C_DEBUG_WORLD_STATE_CHANGE, weather_),
+  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::S_WORLD_INIT, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -417,14 +437,15 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 56, -1, sizeof(::Protocol::C_PLACEOBJECTREQ)},
   { 64, -1, sizeof(::Protocol::S_OBJECTSPAWN)},
   { 74, -1, sizeof(::Protocol::S_WORLD_STATE)},
-  { 82, -1, sizeof(::Protocol::S_WORLD_INIT)},
-  { 88, -1, sizeof(::Protocol::C_GATHER_REQ)},
-  { 94, -1, sizeof(::Protocol::C_OBEJCT_HP)},
-  { 101, -1, sizeof(::Protocol::S_OBJECT_DESPAWN)},
-  { 109, -1, sizeof(::Protocol::S_SEEDGROWTH)},
-  { 117, -1, sizeof(::Protocol::C_SEEDGROWTH)},
-  { 124, -1, sizeof(::Protocol::C_CROPSTATE)},
-  { 131, -1, sizeof(::Protocol::S_PLAYER_DESPAWN)},
+  { 82, -1, sizeof(::Protocol::C_DEBUG_WORLD_STATE_CHANGE)},
+  { 89, -1, sizeof(::Protocol::S_WORLD_INIT)},
+  { 95, -1, sizeof(::Protocol::C_GATHER_REQ)},
+  { 101, -1, sizeof(::Protocol::C_OBEJCT_HP)},
+  { 108, -1, sizeof(::Protocol::S_OBJECT_DESPAWN)},
+  { 116, -1, sizeof(::Protocol::S_SEEDGROWTH)},
+  { 124, -1, sizeof(::Protocol::C_SEEDGROWTH)},
+  { 131, -1, sizeof(::Protocol::C_CROPSTATE)},
+  { 138, -1, sizeof(::Protocol::S_PLAYER_DESPAWN)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -438,6 +459,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_C_PLACEOBJECTREQ_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_S_OBJECTSPAWN_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_S_WORLD_STATE_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_C_DEBUG_WORLD_STATE_CHANGE_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_S_WORLD_INIT_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_C_GATHER_REQ_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::Protocol::_C_OBEJCT_HP_default_instance_),
@@ -451,7 +473,7 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\016Protocol.proto\022\010Protocol\032\nEnum.proto\032\014"
   "Struct.proto\".\n\007C_LOGIN\022\021\n\taccountId\030\001 \001"
-  "(\004\022\020\n\010password\030\002 \001(\004\"=\n\007S_LOGIN\022\017\n\007succe"
+  "(\t\022\020\n\010password\030\002 \001(\t\"=\n\007S_LOGIN\022\017\n\007succe"
   "ss\030\001 \001(\010\022!\n\007players\030\002 \003(\0132\020.Protocol.Pla"
   "yer\"6\n\014C_ENTER_GAME\022\023\n\013playerindex\030\001 \001(\004"
   "\022\021\n\tGameStart\030\002 \001(\010\"1\n\014S_ENTER_GAME\022\020\n\010p"
@@ -471,19 +493,20 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   "ransform\030\003 \001(\0132\023.Protocol.Transform\022\027\n\017o"
   "wner_player_id\030\004 \001(\004\022\017\n\007temp_id\030\005 \001(\004\"G\n"
   "\rS_WORLD_STATE\022\016\n\006season\030\001 \001(\r\022\017\n\007weathe"
-  "r\030\002 \001(\r\022\025\n\rmission_score\030\003 \001(\r\"6\n\014S_WORL"
-  "D_INIT\022&\n\007objects\030\001 \003(\0132\025.Protocol.World"
-  "Object\"!\n\014C_GATHER_REQ\022\021\n\tobject_id\030\001 \001("
-  "\r\",\n\013C_OBEJCT_HP\022\021\n\tobject_id\030\001 \001(\004\022\n\n\002h"
-  "p\030\002 \001(\004\"B\n\020S_OBJECT_DESPAWN\022\021\n\tobject_id"
-  "\030\001 \001(\r\022\n\n\002hp\030\002 \001(\r\022\017\n\007temp_id\030\003 \001(\r\"Y\n\014S"
-  "_SEEDGROWTH\022\021\n\tobject_id\030\001 \001(\r\022&\n\ttransf"
-  "orm\030\002 \001(\0132\023.Protocol.Transform\022\016\n\006growth"
-  "\030\003 \001(\r\"8\n\014C_SEEDGROWTH\022\021\n\tobject_id\030\001 \001("
-  "\r\022\025\n\rCropCheckCell\030\002 \001(\r\"4\n\013C_CROPSTATE\022"
-  "\022\n\nmodel_type\030\001 \001(\004\022\021\n\tobject_id\030\002 \001(\004\"$"
-  "\n\020S_PLAYER_DESPAWN\022\020\n\010playerid\030\001 \001(\004b\006pr"
-  "oto3"
+  "r\030\002 \001(\r\022\025\n\rmission_score\030\003 \001(\r\"=\n\032C_DEBU"
+  "G_WORLD_STATE_CHANGE\022\016\n\006season\030\001 \001(\r\022\017\n\007"
+  "weather\030\002 \001(\r\"6\n\014S_WORLD_INIT\022&\n\007objects"
+  "\030\001 \003(\0132\025.Protocol.WorldObject\"!\n\014C_GATHE"
+  "R_REQ\022\021\n\tobject_id\030\001 \001(\r\",\n\013C_OBEJCT_HP\022"
+  "\021\n\tobject_id\030\001 \001(\004\022\n\n\002hp\030\002 \001(\004\"B\n\020S_OBJE"
+  "CT_DESPAWN\022\021\n\tobject_id\030\001 \001(\r\022\n\n\002hp\030\002 \001("
+  "\r\022\017\n\007temp_id\030\003 \001(\r\"Y\n\014S_SEEDGROWTH\022\021\n\tob"
+  "ject_id\030\001 \001(\r\022&\n\ttransform\030\002 \001(\0132\023.Proto"
+  "col.Transform\022\016\n\006growth\030\003 \001(\r\"8\n\014C_SEEDG"
+  "ROWTH\022\021\n\tobject_id\030\001 \001(\r\022\025\n\rCropCheckCel"
+  "l\030\002 \001(\r\"4\n\013C_CROPSTATE\022\022\n\nmodel_type\030\001 \001"
+  "(\004\022\021\n\tobject_id\030\002 \001(\004\"$\n\020S_PLAYER_DESPAW"
+  "N\022\020\n\010playerid\030\001 \001(\004b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -491,8 +514,8 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_Protocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_Protocol_2eproto = {
-  false, false, 1364, descriptor_table_protodef_Protocol_2eproto, "Protocol.proto", 
-  &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 18,
+  false, false, 1427, descriptor_table_protodef_Protocol_2eproto, "Protocol.proto", 
+  &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 19,
   schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
   file_level_metadata_Protocol_2eproto, file_level_enum_descriptors_Protocol_2eproto, file_level_service_descriptors_Protocol_2eproto,
 };
@@ -519,17 +542,22 @@ C_LOGIN::C_LOGIN(::PROTOBUF_NAMESPACE_ID::Arena* arena)
 C_LOGIN::C_LOGIN(const C_LOGIN& from)
   : ::PROTOBUF_NAMESPACE_ID::Message() {
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
-  ::memcpy(&accountid_, &from.accountid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&password_) -
-    reinterpret_cast<char*>(&accountid_)) + sizeof(password_));
+  accountid_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_accountid().empty()) {
+    accountid_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_accountid(), 
+      GetArenaForAllocation());
+  }
+  password_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  if (!from._internal_password().empty()) {
+    password_.Set(::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::EmptyDefault{}, from._internal_password(), 
+      GetArenaForAllocation());
+  }
   // @@protoc_insertion_point(copy_constructor:Protocol.C_LOGIN)
 }
 
 void C_LOGIN::SharedCtor() {
-::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
-    reinterpret_cast<char*>(&accountid_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&password_) -
-    reinterpret_cast<char*>(&accountid_)) + sizeof(password_));
+accountid_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+password_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 C_LOGIN::~C_LOGIN() {
@@ -540,6 +568,8 @@ C_LOGIN::~C_LOGIN() {
 
 void C_LOGIN::SharedDtor() {
   GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+  accountid_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
+  password_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
 }
 
 void C_LOGIN::ArenaDtor(void* object) {
@@ -558,9 +588,8 @@ void C_LOGIN::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  ::memset(&accountid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&password_) -
-      reinterpret_cast<char*>(&accountid_)) + sizeof(password_));
+  accountid_.ClearToEmpty();
+  password_.ClearToEmpty();
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -570,17 +599,21 @@ const char* C_LOGIN::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
     ::PROTOBUF_NAMESPACE_ID::uint32 tag;
     ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
     switch (tag >> 3) {
-      // uint64 accountId = 1;
+      // string accountId = 1;
       case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
-          accountid_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          auto str = _internal_mutable_accountid();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "Protocol.C_LOGIN.accountId"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
-      // uint64 password = 2;
+      // string password = 2;
       case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
-          password_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
+          auto str = _internal_mutable_password();
+          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
+          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "Protocol.C_LOGIN.password"));
           CHK_(ptr);
         } else goto handle_unusual;
         continue;
@@ -613,16 +646,24 @@ failure:
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  // uint64 accountId = 1;
-  if (this->accountid() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(1, this->_internal_accountid(), target);
+  // string accountId = 1;
+  if (!this->accountid().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_accountid().data(), static_cast<int>(this->_internal_accountid().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "Protocol.C_LOGIN.accountId");
+    target = stream->WriteStringMaybeAliased(
+        1, this->_internal_accountid(), target);
   }
 
-  // uint64 password = 2;
-  if (this->password() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt64ToArray(2, this->_internal_password(), target);
+  // string password = 2;
+  if (!this->password().empty()) {
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+      this->_internal_password().data(), static_cast<int>(this->_internal_password().length()),
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+      "Protocol.C_LOGIN.password");
+    target = stream->WriteStringMaybeAliased(
+        2, this->_internal_password(), target);
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -641,17 +682,17 @@ size_t C_LOGIN::ByteSizeLong() const {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  // uint64 accountId = 1;
-  if (this->accountid() != 0) {
+  // string accountId = 1;
+  if (!this->accountid().empty()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_accountid());
   }
 
-  // uint64 password = 2;
-  if (this->password() != 0) {
+  // string password = 2;
+  if (!this->password().empty()) {
     total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
         this->_internal_password());
   }
 
@@ -686,10 +727,10 @@ void C_LOGIN::MergeFrom(const C_LOGIN& from) {
   ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
   (void) cached_has_bits;
 
-  if (from.accountid() != 0) {
+  if (!from.accountid().empty()) {
     _internal_set_accountid(from._internal_accountid());
   }
-  if (from.password() != 0) {
+  if (!from.password().empty()) {
     _internal_set_password(from._internal_password());
   }
 }
@@ -715,12 +756,16 @@ bool C_LOGIN::IsInitialized() const {
 void C_LOGIN::InternalSwap(C_LOGIN* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(C_LOGIN, password_)
-      + sizeof(C_LOGIN::password_)
-      - PROTOBUF_FIELD_OFFSET(C_LOGIN, accountid_)>(
-          reinterpret_cast<char*>(&accountid_),
-          reinterpret_cast<char*>(&other->accountid_));
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &accountid_, GetArenaForAllocation(),
+      &other->accountid_, other->GetArenaForAllocation()
+  );
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr::InternalSwap(
+      &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      &password_, GetArenaForAllocation(),
+      &other->password_, other->GetArenaForAllocation()
+  );
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata C_LOGIN::GetMetadata() const {
@@ -3112,6 +3157,231 @@ void S_WORLD_STATE::InternalSwap(S_WORLD_STATE* other) {
 
 // ===================================================================
 
+class C_DEBUG_WORLD_STATE_CHANGE::_Internal {
+ public:
+};
+
+C_DEBUG_WORLD_STATE_CHANGE::C_DEBUG_WORLD_STATE_CHANGE(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+  : ::PROTOBUF_NAMESPACE_ID::Message(arena) {
+  SharedCtor();
+  RegisterArenaDtor(arena);
+  // @@protoc_insertion_point(arena_constructor:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+}
+C_DEBUG_WORLD_STATE_CHANGE::C_DEBUG_WORLD_STATE_CHANGE(const C_DEBUG_WORLD_STATE_CHANGE& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message() {
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::memcpy(&season_, &from.season_,
+    static_cast<size_t>(reinterpret_cast<char*>(&weather_) -
+    reinterpret_cast<char*>(&season_)) + sizeof(weather_));
+  // @@protoc_insertion_point(copy_constructor:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::SharedCtor() {
+::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
+    reinterpret_cast<char*>(&season_) - reinterpret_cast<char*>(this)),
+    0, static_cast<size_t>(reinterpret_cast<char*>(&weather_) -
+    reinterpret_cast<char*>(&season_)) + sizeof(weather_));
+}
+
+C_DEBUG_WORLD_STATE_CHANGE::~C_DEBUG_WORLD_STATE_CHANGE() {
+  // @@protoc_insertion_point(destructor:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  SharedDtor();
+  _internal_metadata_.Delete<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::SharedDtor() {
+  GOOGLE_DCHECK(GetArenaForAllocation() == nullptr);
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::ArenaDtor(void* object) {
+  C_DEBUG_WORLD_STATE_CHANGE* _this = reinterpret_cast< C_DEBUG_WORLD_STATE_CHANGE* >(object);
+  (void)_this;
+}
+void C_DEBUG_WORLD_STATE_CHANGE::RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena*) {
+}
+void C_DEBUG_WORLD_STATE_CHANGE::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::Clear() {
+// @@protoc_insertion_point(message_clear_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  ::memset(&season_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&weather_) -
+      reinterpret_cast<char*>(&season_)) + sizeof(weather_));
+  _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
+}
+
+const char* C_DEBUG_WORLD_STATE_CHANGE::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    switch (tag >> 3) {
+      // uint32 season = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 8)) {
+          season_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // uint32 weather = 2;
+      case 2:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 16)) {
+          weather_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
+          CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag == 0) || ((tag & 7) == 4)) {
+          CHK_(ptr);
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag,
+            _internal_metadata_.mutable_unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(),
+            ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* C_DEBUG_WORLD_STATE_CHANGE::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // uint32 season = 1;
+  if (this->season() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(1, this->_internal_season(), target);
+  }
+
+  // uint32 weather = 2;
+  if (this->weather() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(2, this->_internal_weather(), target);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  return target;
+}
+
+size_t C_DEBUG_WORLD_STATE_CHANGE::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // uint32 season = 1;
+  if (this->season() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+        this->_internal_season());
+  }
+
+  // uint32 weather = 2;
+  if (this->weather() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
+        this->_internal_weather());
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  GOOGLE_DCHECK_NE(&from, this);
+  const C_DEBUG_WORLD_STATE_CHANGE* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<C_DEBUG_WORLD_STATE_CHANGE>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+    MergeFrom(*source);
+  }
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::MergeFrom(const C_DEBUG_WORLD_STATE_CHANGE& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  if (from.season() != 0) {
+    _internal_set_season(from._internal_season());
+  }
+  if (from.weather() != 0) {
+    _internal_set_weather(from._internal_weather());
+  }
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::CopyFrom(const C_DEBUG_WORLD_STATE_CHANGE& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:Protocol.C_DEBUG_WORLD_STATE_CHANGE)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool C_DEBUG_WORLD_STATE_CHANGE::IsInitialized() const {
+  return true;
+}
+
+void C_DEBUG_WORLD_STATE_CHANGE::InternalSwap(C_DEBUG_WORLD_STATE_CHANGE* other) {
+  using std::swap;
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(C_DEBUG_WORLD_STATE_CHANGE, weather_)
+      + sizeof(C_DEBUG_WORLD_STATE_CHANGE::weather_)
+      - PROTOBUF_FIELD_OFFSET(C_DEBUG_WORLD_STATE_CHANGE, season_)>(
+          reinterpret_cast<char*>(&season_),
+          reinterpret_cast<char*>(&other->season_));
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata C_DEBUG_WORLD_STATE_CHANGE::GetMetadata() const {
+  return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
+      &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
+      file_level_metadata_Protocol_2eproto[10]);
+}
+
+// ===================================================================
+
 class S_WORLD_INIT::_Internal {
  public:
 };
@@ -3305,7 +3575,7 @@ void S_WORLD_INIT::InternalSwap(S_WORLD_INIT* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S_WORLD_INIT::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[10]);
+      file_level_metadata_Protocol_2eproto[11]);
 }
 
 // ===================================================================
@@ -3495,7 +3765,7 @@ void C_GATHER_REQ::InternalSwap(C_GATHER_REQ* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata C_GATHER_REQ::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[11]);
+      file_level_metadata_Protocol_2eproto[12]);
 }
 
 // ===================================================================
@@ -3720,7 +3990,7 @@ void C_OBEJCT_HP::InternalSwap(C_OBEJCT_HP* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata C_OBEJCT_HP::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[12]);
+      file_level_metadata_Protocol_2eproto[13]);
 }
 
 // ===================================================================
@@ -3968,7 +4238,7 @@ void S_OBJECT_DESPAWN::InternalSwap(S_OBJECT_DESPAWN* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S_OBJECT_DESPAWN::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[13]);
+      file_level_metadata_Protocol_2eproto[14]);
 }
 
 // ===================================================================
@@ -4239,7 +4509,7 @@ void S_SEEDGROWTH::InternalSwap(S_SEEDGROWTH* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S_SEEDGROWTH::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[14]);
+      file_level_metadata_Protocol_2eproto[15]);
 }
 
 // ===================================================================
@@ -4464,7 +4734,7 @@ void C_SEEDGROWTH::InternalSwap(C_SEEDGROWTH* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata C_SEEDGROWTH::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[15]);
+      file_level_metadata_Protocol_2eproto[16]);
 }
 
 // ===================================================================
@@ -4689,7 +4959,7 @@ void C_CROPSTATE::InternalSwap(C_CROPSTATE* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata C_CROPSTATE::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[16]);
+      file_level_metadata_Protocol_2eproto[17]);
 }
 
 // ===================================================================
@@ -4879,7 +5149,7 @@ void S_PLAYER_DESPAWN::InternalSwap(S_PLAYER_DESPAWN* other) {
 ::PROTOBUF_NAMESPACE_ID::Metadata S_PLAYER_DESPAWN::GetMetadata() const {
   return ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(
       &descriptor_table_Protocol_2eproto_getter, &descriptor_table_Protocol_2eproto_once,
-      file_level_metadata_Protocol_2eproto[17]);
+      file_level_metadata_Protocol_2eproto[18]);
 }
 
 // @@protoc_insertion_point(namespace_scope)
@@ -4914,6 +5184,9 @@ template<> PROTOBUF_NOINLINE ::Protocol::S_OBJECTSPAWN* Arena::CreateMaybeMessag
 }
 template<> PROTOBUF_NOINLINE ::Protocol::S_WORLD_STATE* Arena::CreateMaybeMessage< ::Protocol::S_WORLD_STATE >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::S_WORLD_STATE >(arena);
+}
+template<> PROTOBUF_NOINLINE ::Protocol::C_DEBUG_WORLD_STATE_CHANGE* Arena::CreateMaybeMessage< ::Protocol::C_DEBUG_WORLD_STATE_CHANGE >(Arena* arena) {
+  return Arena::CreateMessageInternal< ::Protocol::C_DEBUG_WORLD_STATE_CHANGE >(arena);
 }
 template<> PROTOBUF_NOINLINE ::Protocol::S_WORLD_INIT* Arena::CreateMaybeMessage< ::Protocol::S_WORLD_INIT >(Arena* arena) {
   return Arena::CreateMessageInternal< ::Protocol::S_WORLD_INIT >(arena);

@@ -1,4 +1,4 @@
-#include "stdafx.h"
+ï»¿#include "stdafx.h"
 #include "Scene.h"
 #include"Protocol.pb.h"
 #include"ServerPacketHandler.h"
@@ -32,16 +32,16 @@ CScene::~CScene()
 
 }
 
-//·çÆ® ½Ã±×´ÏÃÄ¸¦ »ý¼º ==> ÃÊ±â¿¡ °£´ÜÇÏ°Ô ·çÆ® ½Ã±×´ÏÃÄ¸¦ ¸¸µé°í Àû¿ëÇÏ´Â Á¤µµ¸¸ »ç¿ëÇÑ ¿¹Á¦
+//ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ==> ï¿½Ê±â¿¡ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //void CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
 //{
-//	//·çÆ® ½Ã±×´ÏÃÄ¸¦ »ý¼º 
+//	//ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ ï¿½ï¿½ï¿½ï¿½ 
 //	D3D12_ROOT_SIGNATURE_DESC d3dRootSignatureDesc;
 //	::ZeroMemory(&d3dRootSignatureDesc, sizeof(D3D12_ROOT_SIGNATURE_DESC));
-//	d3dRootSignatureDesc.NumParameters = 0;	//·çÆ® ÆÄ¶ó¹ÌÅÍ ¿¬°á °¹¼ö
-//	d3dRootSignatureDesc.NumStaticSamplers = 0;	//Á¤Àû »ùÇÃ·¯ ¿¬°á °¹¼ö
-//	d3dRootSignatureDesc.pParameters = NULL;	//¿¬°áÇÒ ·çÆ® ÆÄ¶ó¹ÌÅÍÀÇ Æ÷ÀÎÅÍ
-//	d3dRootSignatureDesc.pStaticSamplers = NULL;	//¿¬°áÇÒ Á¤Àû »ùÇÃ·¯ÀÇ Æ÷ÀÎÅÍ
+//	d3dRootSignatureDesc.NumParameters = 0;	//ï¿½ï¿½Æ® ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//	d3dRootSignatureDesc.NumStaticSamplers = 0;	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//	d3dRootSignatureDesc.pParameters = NULL;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//	d3dRootSignatureDesc.pStaticSamplers = NULL;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 //	d3dRootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
 //
 //	ComPtr<ID3DBlob> pd3dSignatureBlob;	//
@@ -55,38 +55,38 @@ CScene::~CScene()
 //	if (pd3dSignatureBlob) pd3dSignatureBlob.Reset();
 //	if (pd3dErrorBlob) pd3dErrorBlob.Reset();
 //
-//	//·çÆ® ½Ã±×´ÏÃÄ¶õ?
+//	//ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¶ï¿½?
 //	/*
-//	* ·»´õ ÆÄÀÌÇÁ¶óÀÎÀÌ GPU ¼Ó¿¡¼­ ¾î¶»°Ô ÀÛµ¿ÇÒÁö µîÀ» ¼³Á¤ÇÏ´Â ÄÚµùÀÎ Shader ÄÚµù¿¡ ÇÊ¿äÇÑ
-//	* ±Û·Î¹ú º¯¼öµîÀÇ ¿¬°á ¹× ±¸Á¶¸¦ Á¤ÀÇ³»¸®´Â °Í.
-//	* GPU´Â ¿ì¸® »ý°¢º¸´Ù ´Ü¼øÇÏ°í ¿¬°áÀÌ ±î´Ù·Ó±â¿¡ ·çÆ® ½Ã±×´ÏÃÄ¿¡¼­ 
-//	* BYTE Å©±â ¹× »ç¿ëÃ³ µîÀ» ÀüºÎ ±î´Ù·Ó°Ô Á¤ÀÇ³»·ÁÁÖ¾î¾ß ÇÑ´Ù.
+//	* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ GPU ï¿½Ó¿ï¿½ï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½Ûµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Úµï¿½ï¿½ï¿½ Shader ï¿½Úµï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½
+//	* ï¿½Û·Î¹ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½.
+//	* GPUï¿½ï¿½ ï¿½ì¸® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ü¼ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ù·Ó±â¿¡ ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ 
+//	* BYTE Å©ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ù·Ó°ï¿½ ï¿½ï¿½ï¿½Ç³ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ ï¿½Ñ´ï¿½.
 //	*/
 //}
 
 //ID3D12RootSignature* CScene::CreateGraphicsRootSignature(ID3D12Device* pd3dDevice)
 //{
 //	/*
-//	* ·çÆ® ÆÄ¶ó¹ÌÅÍ ÇÑ ¹ø¿¡ 64°³ÀÇ ½½·ÔÀ» ¼³Á¤ °¡´É
-//	* »ó¼ö, µð½ºÅ©¸³ÅÍ, µð½ºÅ©¸³ÅÍ Å×ÀÌºí 3°³¸¦ ¿¬°áÇÒ ¼ö ÀÖ´Ù.
-//	* ¿ëµµ¿¡ µû¶ó¼­ 3°¡Áö Áß ¼±ÅÃÇØ¼­ ³Ñ°Ü¾ß ÇÑ´Ù.
+//	* ï¿½ï¿½Æ® ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 64ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+//	* ï¿½ï¿½ï¿½, ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ìºï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½.
+//	* ï¿½ëµµï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 3ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½Ñ°Ü¾ï¿½ ï¿½Ñ´ï¿½.
 //	*/
 //	ID3D12RootSignature* pd3dGraphicsRootSignature = NULL;
 //
 //
 //	D3D12_ROOT_PARAMETER pd3dRootParameters[2];
-//	pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS; //»ó¼ö¸¦ ±×´ë·Î ¿¬°áÇÏ´Â °æ¿ì
-//	pd3dRootParameters[0].Constants.Num32BitValues = 16; // 16¹ÙÀÌÆ®ÀÇ »ó¼ö¹öÆÛÀÇ »ó¼ö °ªÀ» ³Ñ±ä´Ù´Â ÀÇ¹Ì
-//	pd3dRootParameters[0].Constants.ShaderRegister = 0; //Shader¿¡ ·¹Áö½ºÆ® ¹øÈ£ 0¹ø »ç¿ë
+//	pd3dRootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS; //ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½×´ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½
+//	pd3dRootParameters[0].Constants.Num32BitValues = 16; // 16ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½Ù´ï¿½ ï¿½Ç¹ï¿½
+//	pd3dRootParameters[0].Constants.ShaderRegister = 0; //Shaderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½È£ 0ï¿½ï¿½ ï¿½ï¿½ï¿½
 //	pd3dRootParameters[0].Constants.RegisterSpace = 0;
-//	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VS¿¡¼­ »ç¿ë °¡´ÉÇÏ´Ù´Â ÀÇ¹Ì
+//	pd3dRootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX; // VSï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´Ù´ï¿½ ï¿½Ç¹ï¿½
 //	pd3dRootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-//	pd3dRootParameters[1].Constants.Num32BitValues = 32; // 32¹ÙÀÌÆ®
-//	pd3dRootParameters[1].Constants.ShaderRegister = 1; //0¹øÀ» 0¹ø ½½·Ô¿¡¼­ ¾²´Ï±î 1¹øÀ¸·Î ÁöÁ¤
+//	pd3dRootParameters[1].Constants.Num32BitValues = 32; // 32ï¿½ï¿½ï¿½ï¿½Æ®
+//	pd3dRootParameters[1].Constants.ShaderRegister = 1; //0ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï±ï¿½ 1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //	pd3dRootParameters[1].Constants.RegisterSpace = 0;
 //	pd3dRootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 //
-//	//ÇÃ·¡±×¸¦ ÀÌ·¸°Ô º¯¼öÃ³·³ µû·Î ¸¸µé¾î DESC¿¡ ¿¬°á °¡´É
+//	//ï¿½Ã·ï¿½ï¿½×¸ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã³ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ DESCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 //	D3D12_ROOT_SIGNATURE_FLAGS d3dRootSignatureFlags =
 //		D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
 //		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -104,24 +104,24 @@ CScene::~CScene()
 //
 //	ID3DBlob* pd3dSignatureBlob = NULL;
 //	ID3DBlob* pd3dErrorBlob = NULL;
-//	::D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, //±¸Á¶Ã¼¸¦ GPU°¡ ÀÐÀ» ¼ö ÀÖ´Â ¹ÙÀÌ³Ê¸® Çü½ÄÀ¸·Î Á÷·ÄÈ­ ½ÃÄÑÁÖ°í ÀÖ´Ù.
+//	::D3D12SerializeRootSignature(&d3dRootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, //ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½Ì³Ê¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½Ö°ï¿½ ï¿½Ö´ï¿½.
 //		&pd3dSignatureBlob, &pd3dErrorBlob);
-//	pd3dDevice->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), //Á÷·ÄÈ­µÈ ¹ÙÀÌÆ® ÄÚµå¸¦ ÀÐ¾î¿Í ½ÇÁ¦·Î Create ÇØÁØ´Ù
+//	pd3dDevice->CreateRootSignature(0, pd3dSignatureBlob->GetBufferPointer(), //ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½Úµå¸¦ ï¿½Ð¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Create ï¿½ï¿½ï¿½Ø´ï¿½
 //		pd3dSignatureBlob->GetBufferSize(), __uuidof(ID3D12RootSignature), (void
 //			**)&pd3dGraphicsRootSignature);
-//	if (pd3dSignatureBlob) pd3dSignatureBlob->Release(); // ´õ ÀÌ»ó ÇÊ¿ä ¾øÀ¸´Ï±î Release ÇØÁØ´Ù
+//	if (pd3dSignatureBlob) pd3dSignatureBlob->Release(); // ï¿½ï¿½ ï¿½Ì»ï¿½ ï¿½Ê¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ Release ï¿½ï¿½ï¿½Ø´ï¿½
 //	if (pd3dErrorBlob) pd3dErrorBlob->Release();
 //	return(pd3dGraphicsRootSignature);
 //
 //}
 
 
-//±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ »óÅÂ PSO¸¦ »ý¼º ¿©±â¼­ Shaderµµ »ý¼ºÇÑ´Ù.
-// ÀÌ PSO´Â ¾î¶² ·»´õ¸µÀÌ³Ä¿¡ µû¶ó ¸¹ÀÌ ´Þ¶óÁö´Ï±î ³ªÁß¿¡ ¿©·¯°³ PSO¸¦ ÇÑ ¹ø¿¡ °ü¸®ÇÏ´Â
-//±×·± Å¬·¡½º¸¦ µû·Î ¸¸µé°Å³ª µû¸¥ ¼³Á¤¿¡´Ù°¡ »©µÑ ¿¹Á¤.
+//ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ PSOï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ Shaderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+// ï¿½ï¿½ PSOï¿½ï¿½ ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì³Ä¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¶ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PSOï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½
+//ï¿½×·ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Å³ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 void CScene::CreateGraphicsPipelineState(ID3D12Device* pd3dDevice)
 {
-	//Á¤Á¡ ¼ÎÀÌ´õ¿Í ÇÈ¼¿ ¼ÎÀÌ´õ¸¦ »ý¼ºÇÑ´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	ComPtr<ID3DBlob> pd3dVertexShaderBlob;
 	ComPtr<ID3DBlob> pd3dPixelShaderBlob;
 
@@ -135,36 +135,36 @@ void CScene::CreateGraphicsPipelineState(ID3D12Device* pd3dDevice)
 
 	D3DCompileFromFile(L"Shader/Shaders.hlsl", NULL, NULL, "PSMain", "ps_5_1", nCompileFlags, 0,
 		pd3dPixelShaderBlob.GetAddressOf(), NULL);
-	//Shader¸¦ ÄÄÆÄÀÏ ÇØÁÖ´Â ÇÔ¼ö. Shaders.hlsl ÀÌ¶ó´Â ÀÌ¸§¿¡ ¼ÎÀÌ´õ ÆÄÀÏ¿¡ ÁøÀÔ ÇÔ¼ö ÀÌ¸§ VSMain°ú PSMain 2°³ÀÇ 
-	//Shader ´Ü°è¸¦ ¼³Á¤ÇÏ°í °¢°¢ÀÇ ¹öÀüÀ» ¼±ÅÃÇØÁÖ°í ÀÖ´Ù.
+	//Shaderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ô¼ï¿½. Shaders.hlsl ï¿½Ì¶ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ ï¿½Ì¸ï¿½ VSMainï¿½ï¿½ PSMain 2ï¿½ï¿½ï¿½ï¿½ 
+	//Shader ï¿½Ü°è¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö°ï¿½ ï¿½Ö´ï¿½.
 
-	//·¡½ºÅÍ¶óÀÌÀú »óÅÂ¸¦ ¼³Á¤
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½
 	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
 	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
-	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;	//¾î¶»°Ô Ä¥ÇÒÁö¸¦ ÁöÁ¤ RS ´Ü°è¿¡¼­ ¼³Á¤ÇÏ´Â ÀÌÀ¯´Â 
-	//Á¤Á¡ »çÀÌ¿¡ ¼±Çü º¸°£À» ÅëÇØ¼­ ³ª¸ÓÁö PS¿¡ ³Ñ±æ Á¡µéÀÇ ÁÂÇ¥µéÀ» ¸¸µé¾î³»´Ï±î ÀÌ ´Ü°è¿¡¼­ ¼³Á¤ÇÏ´Â °Å´Ù.
-	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK; //Àº¸é Ã³¸®
-	d3dRasterizerDesc.FrontCounterClockwise = FALSE; //Àº¸é ±âÁØÀ» ½Ã°è ¹æÇâÀ¸·Î Ã³¸®ÇÑ´Ù TRUEÀÌ¸é ¹Ý½Ã°èÀÌ´Ù
-	d3dRasterizerDesc.DepthBias = 0;	// z-fighting ¹®Á¦¸¦ ÇØ°áÇÏ±â À§ÇÑ ±íÀÌ ¹ÙÀÌ¾î½º ¼³Á¤
-	d3dRasterizerDesc.DepthBiasClamp = 0.0f;	//±íÀÌ ¹ÙÀÌ¾î½º ¼³Á¤¿¡ ¿ÀÂ÷ ¹üÀ§ ÁöÁ¤
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;	//ï¿½î¶»ï¿½ï¿½ Ä¥ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ RS ï¿½Ü°è¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PSï¿½ï¿½ ï¿½Ñ±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ç¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½î³»ï¿½Ï±ï¿½ ï¿½ï¿½ ï¿½Ü°è¿¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Å´ï¿½.
+	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK; //ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
+	d3dRasterizerDesc.FrontCounterClockwise = FALSE; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½ï¿½Ñ´ï¿½ TRUEï¿½Ì¸ï¿½ ï¿½Ý½Ã°ï¿½ï¿½Ì´ï¿½
+	d3dRasterizerDesc.DepthBias = 0;	// z-fighting ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ø°ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾î½º ï¿½ï¿½ï¿½ï¿½
+	d3dRasterizerDesc.DepthBiasClamp = 0.0f;	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì¾î½º ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	d3dRasterizerDesc.SlopeScaledDepthBias = 0.0f;	//
-	d3dRasterizerDesc.DepthClipEnable = TRUE;	//NDC·Î º¯È¯ÈÄ ±íÀÌ Å¬¸®ÇÎÀ» ÇÒÁö ¸»Áö ÁöÁ¤
-	d3dRasterizerDesc.MultisampleEnable = FALSE;	//¸ÖÆ¼»ùÇÃ¸µ ÇÒÁö¸»Áö
-	d3dRasterizerDesc.AntialiasedLineEnable = FALSE;	//¾ÈÆ¼¾Ù¸®¾î½Ì ÇÒÁö ¸»Áö
-	d3dRasterizerDesc.ForcedSampleCount = 0;	//¸ÖÆ¼»ùÇÃ¸µÀ» °­Á¦·Î Àû¿ëÇÒ¶§ »ç¿ëÇÏ´Â ¿É¼Ç 0ÀÌ¸é ±âº» µ¿ÀÛÀÌÀÚ »ùÇÃ¸µ ¾øÀ½ÀÌ´Ù.
+	d3dRasterizerDesc.DepthClipEnable = TRUE;	//NDCï¿½ï¿½ ï¿½ï¿½È¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	d3dRasterizerDesc.MultisampleEnable = FALSE;	//ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	d3dRasterizerDesc.AntialiasedLineEnable = FALSE;	//ï¿½ï¿½Æ¼ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	d3dRasterizerDesc.ForcedSampleCount = 0;	//ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½É¼ï¿½ 0ï¿½Ì¸ï¿½ ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì´ï¿½.
 	d3dRasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
-	//·¹½ºÅÍÈ­ ´Ü°èÀÇ ÇÈ¼¿ °è»ê ¹üÀ§¸¦ Á¤ÇÒ¶§ »ç¿ëÇÏ´Â ¹æ½Ä¿¡ Â÷ÀÌ¸¦ ¼³Á¤ÇÏ´Â ¿É¼Ç
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È­ ï¿½Ü°ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ò¶ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Ä¿ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½É¼ï¿½
 
 
-	//ºí·»µå »óÅÂ¸¦ ¼³Á¤ ==> ºí·»µù ¿É¼ÇÀ» ¼³Á¤ÇÏ´Â ºÎºÐ
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ==> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½É¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Îºï¿½
 	D3D12_BLEND_DESC d3dBlendDesc;
 	::ZeroMemory(&d3dBlendDesc, sizeof(D3D12_BLEND_DESC));
-	d3dBlendDesc.AlphaToCoverageEnable = FALSE;	//¾ËÆÄÅõÄ¿¹ö¸®Áö¸¦ È°¼ºÈ­ÇÒÁö
-	d3dBlendDesc.IndependentBlendEnable = FALSE;	// ´ÙÁß ·»´õ Å¸°Ù °³º° ºí·»µù È°¼ºÈ­ ¿©ºÎ
-	d3dBlendDesc.RenderTarget[0].BlendEnable = FALSE;	// ºí·»µùÀ» »ç¿ëÇÒ °ÍÀÎÁö ¿©ºÎ
-	d3dBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;	//	³í¸® ¿¬»ê ºí·»µù È°¼ºÈ­ ¿©ºÎ ==> ¾î¶°ÇÑ ¹æ½ÄÀ¸·Î ºí·»µù ÇÒÁö µî.
-	//¾Æ·¡ ¼³Á¤µéÀº ÀÌÁ¦ 2°³ ¼¯À» ºí·»µùÀ» ¾î¶² ºñÀ² °ªÀ¸·Î ¾î¶² ¹æ½ÄÀ¸·Î ¼³Á¤ÇÒÁö µîÀ» ¼³Á¤ÇØÁÖ´Â ºÎºÐ.
-	//»ö»ó ºí·»µù°ú ¾ËÆÄ ºí·»µù 2°³ÀÇ ¹æ½ÄÀ» ¼³Á¤ÇÏ°í ÀÖ´Ù.
+	d3dBlendDesc.AlphaToCoverageEnable = FALSE;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½ï¿½ï¿½ï¿½
+	d3dBlendDesc.IndependentBlendEnable = FALSE;	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½
+	d3dBlendDesc.RenderTarget[0].BlendEnable = FALSE;	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	d3dBlendDesc.RenderTarget[0].LogicOpEnable = FALSE;	//	ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ ï¿½ï¿½ï¿½ï¿½ ==> ï¿½î¶°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½.
+	//ï¿½Æ·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Îºï¿½.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½.
 	d3dBlendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;	//
 	d3dBlendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;	//
 	d3dBlendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;	//
@@ -172,26 +172,26 @@ void CScene::CreateGraphicsPipelineState(ID3D12Device* pd3dDevice)
 	d3dBlendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
 	d3dBlendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
 	d3dBlendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
-	//¾î¶² »ö»ó Ã¤³ÎÀ» ¾µ°ÍÀÎÁö °áÁ¤ÇÏ´Â ºÎºÐ. 
+	//ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ Ã¤ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Îºï¿½. 
 	d3dBlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
-	//OM ´Ü°è¿¡ ¿¬°áµÇ´Â ¼³Á¤ÀÌ¸ç OM ´Ü°è¿¡´Â ÃÖ´ë 8°³ÀÇ ÈÄ¸é¹öÆÛ°¡ ¿¬°á°¡´ÉÇÏ¹Ç·Î RenderTarget¶ÇÇÑ 8°³°¡ Á¸ÀçÇÒ °ÍÀÌ´Ù.
+	//OM ï¿½Ü°è¿¡ ï¿½ï¿½ï¿½ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ì¸ï¿½ OM ï¿½Ü°è¿¡ï¿½ï¿½ ï¿½Ö´ï¿½ 8ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¸ï¿½ï¿½ï¿½Û°ï¿½ ï¿½ï¿½ï¿½á°¡ï¿½ï¿½ï¿½Ï¹Ç·ï¿½ RenderTargetï¿½ï¿½ï¿½ï¿½ 8ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½.
 
-	//±×·¡ÇÈ ÆÄÀÌÇÁ¶óÀÎ »óÅÂ DESC¸¦ ¼³Á¤
+	//ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ DESCï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dPipelineStateDesc;
 	::ZeroMemory(&d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 	d3dPipelineStateDesc.pRootSignature = m_pd3dRootSignature.Get();
-	d3dPipelineStateDesc.VS.pShaderBytecode = pd3dVertexShaderBlob->GetBufferPointer();	//VS ´Ü°è ¿¬°á
+	d3dPipelineStateDesc.VS.pShaderBytecode = pd3dVertexShaderBlob->GetBufferPointer();	//VS ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	d3dPipelineStateDesc.VS.BytecodeLength = pd3dVertexShaderBlob->GetBufferSize();
-	d3dPipelineStateDesc.PS.pShaderBytecode = pd3dPixelShaderBlob->GetBufferPointer(); //PS ´Ü°è ¿¬°á
+	d3dPipelineStateDesc.PS.pShaderBytecode = pd3dPixelShaderBlob->GetBufferPointer(); //PS ï¿½Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½
 	d3dPipelineStateDesc.PS.BytecodeLength = pd3dPixelShaderBlob->GetBufferSize();
-	d3dPipelineStateDesc.RasterizerState = d3dRasterizerDesc;	//RS ¼³Á¤
-	d3dPipelineStateDesc.BlendState = d3dBlendDesc;	//¿©±â¼­ ºÎÅÍ
+	d3dPipelineStateDesc.RasterizerState = d3dRasterizerDesc;	//RS ï¿½ï¿½ï¿½ï¿½
+	d3dPipelineStateDesc.BlendState = d3dBlendDesc;	//ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½ï¿½
 	d3dPipelineStateDesc.DepthStencilState.DepthEnable = FALSE;
-	d3dPipelineStateDesc.DepthStencilState.StencilEnable = FALSE;	//¿©±â±îÁö°¡ OM ´Ü°è¿¡ ÇÊ¿äÇÑ ¼³Á¤
-	d3dPipelineStateDesc.InputLayout.NumElements = 0;	//IA ´Ü°è¿¡ ÇÊ¿äÇÑ InputLayout ¼³Á¤ Á¤Á¡¿¡ Á¤º¸¸¦ ¾î¶»°Ô ¿¬°áÇÒÁö
-	d3dPipelineStateDesc.InputLayout.pInputElementDescs = NULL;	//¼³Á¤ÇÏ´Â°Ô IA ´Ü°è
+	d3dPipelineStateDesc.DepthStencilState.StencilEnable = FALSE;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ OM ï¿½Ü°è¿¡ ï¿½Ê¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+	d3dPipelineStateDesc.InputLayout.NumElements = 0;	//IA ï¿½Ü°è¿¡ ï¿½Ê¿ï¿½ï¿½ï¿½ InputLayout ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	d3dPipelineStateDesc.InputLayout.pInputElementDescs = NULL;	//ï¿½ï¿½ï¿½ï¿½ï¿½Ï´Â°ï¿½ IA ï¿½Ü°ï¿½
 	d3dPipelineStateDesc.SampleMask = UINT_MAX;
-	d3dPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;	//ÅäÆú·ÎÁö ÇüÅÂ¸¦ ¾î¶»°Ô ÁöÁ¤ÇÒÁö IA ¿¬°üµÇ¾îÀÖ´Ù.
+	d3dPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¸ï¿½ ï¿½î¶»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ IA ï¿½ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½Ö´ï¿½.
 	d3dPipelineStateDesc.NumRenderTargets = 1;
 	d3dPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	d3dPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -217,7 +217,7 @@ void CScene::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstant
 	if (FAILED(hr)) {
 		_com_error err(hr);
 		OutputDebugStringW(L"[CreateDescriptorHeap] FAILED: ");
-		OutputDebugStringW(err.ErrorMessage());   // ¡ç ¿©±â¼­ »ç¶÷ÀÌ ÀÐÀ» ¼ö ÀÖ´Â ¸Þ½ÃÁö Ãâ·Â
+		OutputDebugStringW(err.ErrorMessage());   // ï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		OutputDebugStringW(L"\n");
 		return;
 	}
@@ -240,7 +240,7 @@ void CScene::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstant
 void CScene::CreateConstantBufferViews(ID3D12Device* pd3dDevice, int nConstantBufferViews, ID3D12Resource* pd3dConstantBuffers, UINT nStride)
 {
 	/*
-	* ¾Æ ¿Ö ÀÌ·¸°Ô ÀÛ¼ºÇßÁö;;; CPU ÇÚµé °ªÀÌ º¯ÇÏÁö ¾Ê´Â ÀÌ»óÇÑ°É·Î °è¼Ó ÇÏ³ª¸¸ Ã¤¿ì°íÀÖ¾ú³×;;
+	* ï¿½ï¿½ ï¿½ï¿½ ï¿½Ì·ï¿½ï¿½ï¿½ ï¿½Û¼ï¿½ï¿½ï¿½ï¿½ï¿½;;; CPU ï¿½Úµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´ï¿½ ï¿½Ì»ï¿½ï¿½Ñ°É·ï¿½ ï¿½ï¿½ï¿½ ï¿½Ï³ï¿½ï¿½ï¿½ Ã¤ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½;;
 	*/
 	/*D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = pd3dConstantBuffers->GetGPUVirtualAddress();
 	D3D12_CONSTANT_BUFFER_VIEW_DESC d3dCBVDesc;
@@ -295,10 +295,10 @@ D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateConstantBufferView(ID3D12Device* pd3dD
 }
 
 /*
-* TextureResourceView¸¦ DescriptorHeap¿¡ »ý¼º°ú ÇÔ²² ÀúÀåÇØÁÖ´Â ÇÔ¼ö·Î
-* Texture Á¤º¸¸¦ ÀÐ¾î¿Â CTexture¸¦ ¹Þ¾Æ¿À¸ç
-* µð½ºÅ©¸³ÅÍ ÈüÀÇ ¸î ¹øÂ° ºÎÅÍ ½ÃÀÛÇÒ²«Áö ÁöÁ¤ 3 ¹ø¤Š ÆÄ¶ó¹ÌÅÍ °ªÀÌ´Ù
-* ÇöÀç ·çÆ® ÆÄ¶ó¹ÌÅÍÀÇ ¸î¹øÂ°¿¡ µî·ÏÇØ¼­ »ç¿ëÇÒÁö°¡ 4¹øÂ° ÆÄ¶ó¹ÌÅÍ¿¡ ÀÖ´Ù.
+* TextureResourceViewï¿½ï¿½ DescriptorHeapï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ô²ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½
+* Texture ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ CTextureï¿½ï¿½ ï¿½Þ¾Æ¿ï¿½ï¿½ï¿½
+* ï¿½ï¿½Å©ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Â° ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 3 ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½
+* ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 4ï¿½ï¿½Â° ï¿½Ä¶ï¿½ï¿½ï¿½Í¿ï¿½ ï¿½Ö´ï¿½.
 */
 void CScene::CreateShaderResourceViews(ID3D12Device* pd3dDevice, CTexture* pTexture, UINT nDescriptorHeapIndex, UINT nRootParameterStartIndex)
 {
@@ -349,7 +349,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateStructureBufferSRV(ID3D12Device* pd3dD
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.Format = DXGI_FORMAT_UNKNOWN; //StructuredBuffer ÇÊ¼ö
+	srvDesc.Format = DXGI_FORMAT_UNKNOWN; //StructuredBuffer ï¿½Ê¼ï¿½
 	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
 	srvDesc.Buffer.FirstElement = 0;
 	srvDesc.Buffer.NumElements = nElementCount;
@@ -394,7 +394,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateShaderResourceView(ID3D12Device* pd3dD
 
 void CScene::CreateUnorderedAccessView(ID3D12Device* pd3dDevice, CTexture* pTexture, DXGI_FORMAT* pdxgiFormat , UINT nDescriptorHeapIndex, UINT nRootParameterStartIndex)
 {
-	// UAV Heap ½ÃÀÛ À§Ä¡ ÀÌµ¿
+	// UAV Heap ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½Ìµï¿½
 	m_pDescriptorHeap->m_d3dUavCPUDescriptorNextHandle.ptr +=
 		(::gnCbvSrvDescriptorIncrementSize * nDescriptorHeapIndex);
 
@@ -407,7 +407,7 @@ void CScene::CreateUnorderedAccessView(ID3D12Device* pd3dDevice, CTexture* pText
 	{
 		ComPtr<ID3D12Resource> pUavResource = pTexture->GetResource(i);
 
-		// UAV Desc (Texture2D ±âÁØ)
+		// UAV Desc (Texture2D ï¿½ï¿½ï¿½ï¿½)
 		D3D12_UNORDERED_ACCESS_VIEW_DESC d3dUnorderedAccessViewDesc = {};
 		d3dUnorderedAccessViewDesc.Format = pdxgiFormat[i];
 		d3dUnorderedAccessViewDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
@@ -416,16 +416,16 @@ void CScene::CreateUnorderedAccessView(ID3D12Device* pd3dDevice, CTexture* pText
 
 		pd3dDevice->CreateUnorderedAccessView(
 			pUavResource.Get(),
-			nullptr, // Texture UAV´Â Counter ¾øÀ½
+			nullptr, // Texture UAVï¿½ï¿½ Counter ï¿½ï¿½ï¿½ï¿½
 			&d3dUnorderedAccessViewDesc,
 			m_pDescriptorHeap->m_d3dUavCPUDescriptorNextHandle
 		);
 
-		// GPU Handle ÀúÀå
+		// GPU Handle ï¿½ï¿½ï¿½ï¿½
 		pTexture->SetUavGpuDescriptorHandle(i,
 			m_pDescriptorHeap->m_d3dUavGPUDescriptorNextHandle);
 
-		// ´ÙÀ½ UAV ½½·ÔÀ¸·Î ÀÌµ¿
+		// ï¿½ï¿½ï¿½ï¿½ UAV ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
 		m_pDescriptorHeap->m_d3dUavCPUDescriptorNextHandle.ptr +=
 			::gnCbvSrvDescriptorIncrementSize;
 
@@ -433,7 +433,7 @@ void CScene::CreateUnorderedAccessView(ID3D12Device* pd3dDevice, CTexture* pText
 			::gnCbvSrvDescriptorIncrementSize;
 	}
 
-	// Root Parameter ÀÎµ¦½º ¼³Á¤ (u0ºÎÅÍ)
+	// Root Parameter ï¿½Îµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ (u0ï¿½ï¿½ï¿½ï¿½)
 	int nRootParameters = pTexture->GetRootParameters();
 	for (int i = 0; i < nRootParameters; i++)
 	{
@@ -444,7 +444,7 @@ void CScene::CreateUnorderedAccessView(ID3D12Device* pd3dDevice, CTexture* pText
 D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateStructureBufferUAV(ID3D12Device* pd3dDevice, ID3D12Resource* pd3dResource, UINT nElementCount, UINT nStructureStride)
 {
 	D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-	uavDesc.Format = DXGI_FORMAT_UNKNOWN;           // StructuredBuffer ÇÊ¼ö
+	uavDesc.Format = DXGI_FORMAT_UNKNOWN;           // StructuredBuffer ï¿½Ê¼ï¿½
 	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
 	uavDesc.Buffer.FirstElement = 0;
 	uavDesc.Buffer.NumElements = nElementCount;
@@ -476,20 +476,20 @@ D3D12_GPU_DESCRIPTOR_HANDLE CScene::CreateStructureBufferUAV(ID3D12Device* pd3dD
 
 void CScene::CreateShaderResourceViewRtvs(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, UINT nRenderTargets, DXGI_FORMAT* pdxgiFormats, D3D12_CPU_DESCRIPTOR_HANDLE d3dRtvCPUDescriptorHandle)
 {
-	//Normal °ªÀ» ÀúÀåÇÒ G-buffer ÇÏ³ª¸¦ ´õ ¸¸µç´Ù
-	//PostPorcessing °ú HDRI °á°ú¸¦ ÀúÀåÇÒ RTV¿Í  Normal °ªÀ» ÀúÀåÇÒ G-buffer¸¦ ÇÏ³ª ´õ ¸¸µç´Ù
+	//Normal ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ G-buffer ï¿½Ï³ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
+	//PostPorcessing ï¿½ï¿½ HDRI ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ RTVï¿½ï¿½  Normal ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ G-bufferï¿½ï¿½ ï¿½Ï³ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	/*
-	* TODO: ¸®ÆÑÅä¸µÇÒ‹š Àú nRenderTargets °ªÀÌ¶û Compute¸¦ À§ÇÑ°Í°ú Graphics¸¦ À§ÇÑ°Å 2°³·Î ÂÉ°³´Â °úÁ¤ ÇÊ¿ä
+	* TODO: ï¿½ï¿½ï¿½ï¿½ï¿½ä¸µï¿½Ò‹ï¿½ ï¿½ï¿½ nRenderTargets ï¿½ï¿½ï¿½Ì¶ï¿½ Computeï¿½ï¿½ ï¿½ï¿½ï¿½Ñ°Í°ï¿½ Graphicsï¿½ï¿½ ï¿½ï¿½ï¿½Ñ°ï¿½ 2ï¿½ï¿½ï¿½ï¿½ ï¿½É°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
 	*/
 
-	//Texture¸¦ ¼±¾ð ¹× ÃÊ±âÈ­
+	//Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­
 	m_pRenderTexture = new CTexture(nRenderTargets, RESOURCE_TEXTURE2D, 0, 1);
 	m_pComputeRenderTexture = new CTexture( 4, RESOURCE_TEXTURE2D, 0, 1);
 
-	//HDR ÆÄÀÌÇÁ¶óÀÎÀ¸·Î ¹Ù²Ù±â À§ÇØ¼­
+	//HDR ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²Ù±ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½
 	D3D12_CLEAR_VALUE d3dClearValue = { DXGI_FORMAT_R16G16B16A16_FLOAT, { 0.0f, 0.0f, 0.0f, 1.0f } };
-	//RenderTarget °¹¼ö¸¸Å­ ¸¸µé°í
+	//RenderTarget ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (UINT i = 0; i < nRenderTargets; i++)
 	{
 		d3dClearValue.Format = pdxgiFormats[i];
@@ -506,7 +506,7 @@ void CScene::CreateShaderResourceViewRtvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 	}
 
 
-	//´Ù¸¥ Texture¸®¼Ò½ºµµ ¸¸µç´Ù.
+	//ï¿½Ù¸ï¿½ Textureï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½.
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	
 	DXGI_FORMAT uavFormats[1] =
@@ -523,25 +523,25 @@ void CScene::CreateShaderResourceViewRtvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 		
 	};
 
-	//UAV ¸¸µé¾îÁÖ°í
-	CreateUnorderedAccessView( //Render¿¡¼­ °á°ú¸¦ ´ã¾Æ¿Ã RTV¸¦ UAV·Î ¸¸µå´Â °æ¿ì
+	//UAV ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö°ï¿½
+	CreateUnorderedAccessView( //Renderï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Æ¿ï¿½ RTVï¿½ï¿½ UAVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 		pd3dDevice,
 		m_pRenderTexture,   
 		uavFormats,
 		0,                  // UAV Heap index
-		4                   // Compute RootParameter ½ÃÀÛ ÀÎµ¦½º (u0)
+		4                   // Compute RootParameter ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ (u0)
 	);
 
-	CreateUnorderedAccessView( //CS¿¡¼­ »ç¿ëÇÒ ¸ñÀûÀ¸·Î »ý¼ºµÈ G-Bufferµé°ú ºí·¯°á°ú¸¦ swap ÇØÁÙ 2°³ÀÇ Texture UAV
+	CreateUnorderedAccessView( //CSï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ G-Bufferï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ swap ï¿½ï¿½ï¿½ï¿½ 2ï¿½ï¿½ï¿½ï¿½ Texture UAV
 		pd3dDevice,
 		m_pComputeRenderTexture,
 		uavFormats2,
 		0,                  // UAV Heap index
-		4                   // Compute RootParameter ½ÃÀÛ ÀÎµ¦½º (u0)
+		4                   // Compute RootParameter ï¿½ï¿½ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ (u0)
 	);
-	//SRVµµ ¸¸µé°í
+	//SRVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 	CScene::CreateShaderResourceViews(pd3dDevice, m_pRenderTexture, 0, 19);
-	CScene::CreateShaderResourceViews(pd3dDevice, m_pComputeRenderTexture, 0, 3); //Compute¿¡ ¿¬°áÇÒ²¨´Ï±î
+	CScene::CreateShaderResourceViews(pd3dDevice, m_pComputeRenderTexture, 0, 3); //Computeï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½Ï±ï¿½
 
 	D3D12_RENDER_TARGET_VIEW_DESC d3dRenderTargetViewDesc;
 	d3dRenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
@@ -551,33 +551,33 @@ void CScene::CreateShaderResourceViewRtvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 
 	m_pd3dRtvCPUDescriptorHandles = new D3D12_CPU_DESCRIPTOR_HANDLE[nRenderTargets];
 	m_pd3dG_bufferRtvCPUDescriptorHandles = new D3D12_CPU_DESCRIPTOR_HANDLE[2];
-	//RTV ¸¸µé°í
+	//RTV ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (UINT i = 0; i < nRenderTargets; i++)
 	{
-		//PostProcessing¿¡ Àü¹ÝÀûÀÎ ±âº» Texture
+		//PostProcessingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½âº» Texture
 		d3dRenderTargetViewDesc.Format = pdxgiFormats[i];
 		ComPtr<ID3D12Resource> pd3dTextureResource = m_pRenderTexture->GetResource(i);
 		pd3dDevice->CreateRenderTargetView(pd3dTextureResource.Get(), &d3dRenderTargetViewDesc, d3dRtvCPUDescriptorHandle);
-		m_pd3dRtvCPUDescriptorHandles[i] = d3dRtvCPUDescriptorHandle; //RTV¶û DSV´Â CPU Address°¡ ÇÊ¿äÇÏ´Ù
+		m_pd3dRtvCPUDescriptorHandles[i] = d3dRtvCPUDescriptorHandle; //RTVï¿½ï¿½ DSVï¿½ï¿½ CPU Addressï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Ï´ï¿½
 		d3dRtvCPUDescriptorHandle.ptr += ::gnRtvDescriptorIncrementSize;
 	}
 
 	for (UINT i = 0; i < 2; i++)
 	{
-		//PostProcessing¿¡ Àü¹ÝÀûÀÎ ±âº» Texture
+		//PostProcessingï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½âº» Texture
 		d3dRenderTargetViewDesc.Format = dxgiFormats[i];
 
-		//SSAO¿¡ »ç¿ëÇÒ G_Buffer¸¦ ÀúÀåÇÒ RenderTexture
+		//SSAOï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ G_Bufferï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ RenderTexture
 		ComPtr<ID3D12Resource> pd3dTextureResource = m_pComputeRenderTexture->GetResource(i);
 		pd3dDevice->CreateRenderTargetView(pd3dTextureResource.Get(), &d3dRenderTargetViewDesc, d3dRtvCPUDescriptorHandle);
-		m_pd3dG_bufferRtvCPUDescriptorHandles[i] = d3dRtvCPUDescriptorHandle; //RTV¶û DSV´Â CPU Address°¡ ÇÊ¿äÇÏ´Ù
+		m_pd3dG_bufferRtvCPUDescriptorHandles[i] = d3dRtvCPUDescriptorHandle; //RTVï¿½ï¿½ DSVï¿½ï¿½ CPU Addressï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Ï´ï¿½
 		d3dRtvCPUDescriptorHandle.ptr += ::gnRtvDescriptorIncrementSize;
 	}
 }
 
 void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, UINT nDepthTextures, D3D12_CPU_DESCRIPTOR_HANDLE d3dDsvCPUDescriptorHandle, ID3D12Resource* DefaultDepthStncilBuffer)
 {
-	//Texture¸¦ ¼±¾ð ¹× ÃÊ±âÈ­
+	//Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ê±ï¿½È­
 	m_pShadowDepthTexture = new CTexture(nDepthTextures, RESOURCE_TEXTURE2D, 0, 1);
 
 	D3D12_CLEAR_VALUE d3dClearValue = {};
@@ -585,10 +585,10 @@ void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 	d3dClearValue.DepthStencil.Depth = 1.0f;
 	d3dClearValue.DepthStencil.Stencil = 0;
 	
-	DXGI_FORMAT dxgiFormatResource = DXGI_FORMAT_R32_TYPELESS; // Resource¸¦ À§ÇÑ°Í
-	DXGI_FORMAT* pdxgiFormatSRV = new DXGI_FORMAT[nDepthTextures]; // SRV¸¦ À§ÇÑ°Í
+	DXGI_FORMAT dxgiFormatResource = DXGI_FORMAT_R32_TYPELESS; // Resourceï¿½ï¿½ ï¿½ï¿½ï¿½Ñ°ï¿½
+	DXGI_FORMAT* pdxgiFormatSRV = new DXGI_FORMAT[nDepthTextures]; // SRVï¿½ï¿½ ï¿½ï¿½ï¿½Ñ°ï¿½
 
-	//nDepthTextures °¹¼ö¸¸Å­ ¸¸µé°í
+	//nDepthTextures ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ ï¿½ï¿½ï¿½ï¿½ï¿½
 	for (UINT i = 0; i < nDepthTextures; i++)
 	{
 		pdxgiFormatSRV[i] = DXGI_FORMAT_R32_FLOAT;
@@ -602,13 +602,13 @@ void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 		}
 	}
 
-	//´Ù¸¥ Texture¸®¼Ò½ºµµ ¸¸µç´Ù.
+	//ï¿½Ù¸ï¿½ Textureï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½.
 	//CreateShaderVariables(pd3dDevice, pd3dCommandList);
 
-	//SRVµµ ¸¸µé°í
+	//SRVï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½
 	CScene::CreateShaderResourceViews(pd3dDevice, m_pShadowDepthTexture, pdxgiFormatSRV,  0, 20);
 
-	//±âº»À¸·Î ¾²ÀÌ´Â ±íÀÌ¸Ê
+	//ï¿½âº»ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½Ì¸ï¿½
 	DXGI_FORMAT dxgiFormatSRV = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 	m_pd3dDefaultDepthMapSrvDescrptorHandles = CScene::CreateShaderResourceView(pd3dDevice, DefaultDepthStncilBuffer,  dxgiFormatSRV);
 	m_pDefaultDepthStancilResource = DefaultDepthStncilBuffer;
@@ -621,7 +621,7 @@ void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 
 	m_pd3dSahdowMapDsvCPUDescriptorHandles = new D3D12_CPU_DESCRIPTOR_HANDLE[nDepthTextures];
 
-	//DSV ¸¸µé°í
+	//DSV ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	ComPtr<ID3D12Resource> pd3dTextureResource;
 
@@ -629,7 +629,7 @@ void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 	{
 		pd3dTextureResource = m_pShadowDepthTexture->GetResource(i);
 		pd3dDevice->CreateDepthStencilView(pd3dTextureResource.Get(), &d3dDepthStencilViewDesc, d3dDsvCPUDescriptorHandle);
-		m_pd3dSahdowMapDsvCPUDescriptorHandles[i] = d3dDsvCPUDescriptorHandle; //RTV¶û DSV´Â CPU Address°¡ ÇÊ¿äÇÏ´Ù
+		m_pd3dSahdowMapDsvCPUDescriptorHandles[i] = d3dDsvCPUDescriptorHandle; //RTVï¿½ï¿½ DSVï¿½ï¿½ CPU Addressï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Ï´ï¿½
 		d3dDsvCPUDescriptorHandle.ptr += ::gnDsvDescriptorIncrementSize;
 	}
 	if (pdxgiFormatSRV)
@@ -641,12 +641,12 @@ void CScene::CreateShaderResourceViewDsvs(ID3D12Device* pd3dDevice, ID3D12Graphi
 void CScene::CreateShaderResourceViewAndUAVStructuredBuffer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	//
-	UINT ncbElementBytes = ((sizeof(ClusterCB) + 255) & ~255); //256ÀÇ ¹è¼ö
+	UINT ncbElementBytes = ((sizeof(ClusterCB) + 255) & ~255); //256ï¿½ï¿½ ï¿½ï¿½ï¿½
 	m_cpcbCluster = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 
 	m_cpcbCluster->Map(0, NULL, (void**)&m_pcbCluster);
 
-	ncbElementBytes = ((sizeof(LightingData) + 255) & ~255); //256ÀÇ ¹è¼ö
+	ncbElementBytes = ((sizeof(LightingData) + 255) & ~255); //256ï¿½ï¿½ ï¿½ï¿½ï¿½
 	m_cpcbLightData = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 
 	m_cpcbLightData->Map(0, NULL, (void**)&m_pcbLightData);
@@ -672,7 +672,7 @@ void CScene::CreateShaderResourceViewAndUAVStructuredBuffer(ID3D12Device* pd3dDe
 			nullptr
 		);
 
-	// ClusterLightList UAV (CS¿¡¼­ ¾²±â)
+	// ClusterLightList UAV (CSï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
 	m_hClusterLightListUav =
 		CreateStructureBufferUAV(
 			pd3dDevice,
@@ -681,7 +681,7 @@ void CScene::CreateShaderResourceViewAndUAVStructuredBuffer(ID3D12Device* pd3dDe
 			sizeof(ClusterLightList)
 		);
 
-	// ClusterLightList SRV (PS¿¡¼­ ÀÐ±â)
+	// ClusterLightList SRV (PSï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½)
 	m_hClusterLightListSrv =
 		CreateStructureBufferSRV(
 			pd3dDevice,
@@ -696,12 +696,12 @@ void CScene::CreateShaderResourceViewAndUAVStructuredBuffer(ID3D12Device* pd3dDe
 
 void CScene::BuildObjects(ID3D12Device* pd3dDevice)
 {
-	//CreateGraphicsRootSignature(pd3dDevice);	//·çÆ® ½Ã±×´ÏÃÄ¿Í PSO¸¦ ¿©±â¼­ ÃÊ±âÈ­ÇØÁÖ°í ÀÖ´Ù. 
-	//CreateGraphicsPipelineState(pd3dDevice);	//ÀÌ°Ç ±¸Áö BuildObjects¿¡ ³Ö¾îÁÙ ÇÊ¿ä±îÁø ¾ø°í ¼³°è¸¦ ÀÌ·¸°Ô ÇßÀ» »Ó
-	//ÃÊ±âÈ­ ÇÔ¼ö¸¦ µû·Î ¸¸µéµçÇØ¼­ Á¦¾î °¡´ÉÇÏ´Ù.
+	//CreateGraphicsRootSignature(pd3dDevice);	//ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¿ï¿½ PSOï¿½ï¿½ ï¿½ï¿½ï¿½â¼­ ï¿½Ê±ï¿½È­ï¿½ï¿½ï¿½Ö°ï¿½ ï¿½Ö´ï¿½. 
+	//CreateGraphicsPipelineState(pd3dDevice);	//ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ BuildObjectsï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½è¸¦ ï¿½Ì·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
+	//ï¿½Ê±ï¿½È­ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½.
 
-	//´Ù¸¸ GameFramework¿¡¼­ BuildObjects¸¦ ÃÊ±âÈ­ °³³äÀ» Àû¿ëÇØ¼­ »ç¿ëÇÏ´Â ±¸Á¶·Î ·ÎÁ÷ÀÌ Â¥¿©ÀÖ¾î¼­ ¿©±â´Ù°¡ ³Ö´Â°Ô
-	//Æí¸®ÇÏ°Ô º¸ÀÎ´Ù.
+	//ï¿½Ù¸ï¿½ GameFrameworkï¿½ï¿½ï¿½ï¿½ BuildObjectsï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Â¥ï¿½ï¿½ï¿½Ö¾î¼­ ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½Ö´Â°ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ï¿½ï¿½Î´ï¿½.
 
 }
 
@@ -740,7 +740,7 @@ void CScene::ReleaseShaderVariables()
 
 void CScene::ReleaseObjects()
 {
-	if (m_pd3dRootSignature) m_pd3dRootSignature.Reset();	//ComPtrÀ» ›§±â¿¡ ±¸Áö ÇÊ¿äÇÏÁø ¾ÊÀºµ¥
+	if (m_pd3dRootSignature) m_pd3dRootSignature.Reset();	//ComPtrï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
 	if (m_ppObjects)
 	{
@@ -756,7 +756,7 @@ void CScene::ReleaseObjects()
 	{
 		delete[] m_pShaders;
 	}
-	if (m_pd3dPipelineState) m_pd3dPipelineState.Reset();	//Ç×»ó Release·Î ¸Þ¸ð¸® °ü¸®°¡ ÇÊ¿äÇÏ´Ü°É ÀØÁö¸»ÀÚ.
+	if (m_pd3dPipelineState) m_pd3dPipelineState.Reset();	//ï¿½×»ï¿½ Releaseï¿½ï¿½ ï¿½Þ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½ï¿½Ï´Ü°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 
 
 }
@@ -808,7 +808,7 @@ bool CScene::ProcessInput()
 	return false;
 }
 
-//¿ÀºêÁ§Æ®ÀÇ ¾Ö´Ï¸ÞÀÌ¼Ç
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½
 void CScene::AnimateObjects(float fTimeElapsed)
 {
 	{
@@ -903,47 +903,47 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 }
 
-//Render ÇÏ±âÀü ¿ì¼± ÀÌ°Ç ¾È¾²°í CShader¿¡¼­ ¼³Á¤ÇÏ°í ÀÖ´Ù
+//Render ï¿½Ï±ï¿½ï¿½ï¿½ ï¿½ì¼± ï¿½Ì°ï¿½ ï¿½È¾ï¿½ï¿½ï¿½ CShaderï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö´ï¿½
 void CScene::PrepareRender(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	//·çÆ® ½Ã±×´ÏÃÄ ¿¬°á
+	//ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get());
 
-	//PSO ¿¬°á ==> PSO¿¡ ·çÆ® ½Ã±×´ÏÃÄ¸¦ ¿¬°áÇßÀ¸¸ç ¼­·Î ´Ù¸¥ °Ô ¿¬°áµÇ¾î ÀÖ´Ù¸é ·±Å¸ÀÓ 
+	//PSO ï¿½ï¿½ï¿½ï¿½ ==> PSOï¿½ï¿½ ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù¸ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½Ö´Ù¸ï¿½ ï¿½ï¿½Å¸ï¿½ï¿½ 
 	pd3dCommandList->SetPipelineState(m_pd3dPipelineState.Get());
 
-	//IAÀÇ ÅäÆú·ÎÁö¸¦ Æ®¶óÀÌ¾Þ±Û¸®½ºÆ®·Î ¼³Á¤
+	//IAï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Æ®ï¿½ï¿½ï¿½Ì¾Þ±Û¸ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	pd3dCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 }
 
-//º» Render¸¦ ½ÃÀÛÇÏ±â Àü¿¡ »çÀüÀÛ¾÷
+//ï¿½ï¿½ Renderï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Û¾ï¿½
 void CScene::OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, int nRenderTargets, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dRtvCPUHandles, D3D12_CPU_DESCRIPTOR_HANDLE* pd3dDsvCPUHandle, CCamera* pCamera)
 {
-	//pCamera->SetViewportsAndScissorRects(pd3dCommandList); //ºäÆ÷Æ®¿Í ½ÃÀú·ºÆ®¸¦ ½ÇÁ¦ GPU ¸í·É¾î·Î SetÇØÁÖ´Â °Å
+	//pCamera->SetViewportsAndScissorRects(pd3dCommandList); //ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GPU ï¿½ï¿½ï¿½É¾ï¿½ï¿½ Setï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½
 
-	pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get()); //·çÆ® ½Ã±×´ÏÃÄ¸¦ GPU¿¡°Ô ³Ñ±â´Â°Å
+	pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get()); //ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ GPUï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½Â°ï¿½
 	pd3dCommandList->SetComputeRootSignature(m_cpd3dComputeRootSignature.Get());
 	//if (pCamera)
 	//{
 	//	for (int i = 0; i < MAX_LIGHTS; i++)
 	//	{
-	//		//TODO ¿©±â´Ù°¡ Á¶¸í Shader Ã³¸®¸¦ ÇÑ¹ø ¿¡ ÂÓ ÇØ¾ßÇÑ´Ù 
+	//		//TODO ï¿½ï¿½ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ Shader Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¹ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½Ø¾ï¿½ï¿½Ñ´ï¿½ 
 	//	}
 	//}
 }
 
-//Scene³»¿¡ ¿ÀºêÁ§Æ®µéÀ» ±×¸®´Â µ¿ÀÛ ==> Camara°¡ ÇÏ³ªÀÌ°í ¿òÁ÷ÀÌÁö ¾Ê´Â´Ù´Â ÀüÁ¦ÇÏ¿¡¼­
+//Sceneï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ==> Camaraï¿½ï¿½ ï¿½Ï³ï¿½ï¿½Ì°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´Ù´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	//PrepareRender(pd3dCommandList);
 
-	//pd3dCommandList->DrawInstanced(6,1,0,0);	//Draw ¸í·É ¿©±ä ÀÓÀÇ·Î ±×³É ±×¸®´Â°Å¶ó°í º¸¸éµÈ´Ù.
+	//pd3dCommandList->DrawInstanced(6,1,0,0);	//Draw ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½×³ï¿½ ï¿½×¸ï¿½ï¿½Â°Å¶ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È´ï¿½.
 
-	 //±×·¡ÇÈ ·çÆ® ½Ã±×³ÊÃÄ¸¦ ÆÄÀÌÇÁ¶óÀÎ¿¡ ¿¬°á(¼³Á¤)ÇÑ´Ù.
+	 //ï¿½×·ï¿½ï¿½ï¿½ ï¿½ï¿½Æ® ï¿½Ã±×³ï¿½ï¿½Ä¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½)ï¿½Ñ´ï¿½.
 	pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get());
 
-	//¾ÀÀ» ·»´õ¸µÇÏ´Â °ÍÀº ¾ÀÀ» ±¸¼ºÇÏ´Â ¼ÎÀÌ´õ(¼ÎÀÌ´õ°¡ Æ÷ÇÔÇÏ´Â °´Ã¼)µéÀ» ·»´õ¸µÇÏ´Â °ÍÀÌ´Ù.
+	//ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½(ï¿½ï¿½ï¿½Ì´ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½Ã¼)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½.
 	//for (int i = 0; i < m_nShaders; i++)
 	//{
 	//	m_ppShader[i]->Render(pd3dCommandList);
@@ -969,34 +969,34 @@ void CScene::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	if (m_nWeather == 0)
 	{
-		if (m_pIBLBRDFTexture) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLBRDFTexture) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLBRDFTexture->UpdateShaderVariables(pd3dCommandList);
 		}
 
-		if (m_pIBLSpecluarTexture) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLSpecluarTexture) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLSpecluarTexture->UpdateShaderVariables(pd3dCommandList);
 		}
 
-		if (m_pIBLIrradianceTexture) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLIrradianceTexture) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLIrradianceTexture->UpdateShaderVariables(pd3dCommandList);
 		}
 	}
 	else
 	{
-		if (m_pIBLBRDFTextureCloud) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLBRDFTextureCloud) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLBRDFTextureCloud->UpdateShaderVariables(pd3dCommandList);
 		}
 
-		if (m_pIBLSpecluarTextureCloud) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLSpecluarTextureCloud) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLSpecluarTextureCloud->UpdateShaderVariables(pd3dCommandList);
 		}
 
-		if (m_pIBLIrradianceTextureCloud) //È¯°æ¸ÊÀÌ Á¸Àç¸¦ ÇÑ´Ù¸é
+		if (m_pIBLIrradianceTextureCloud) //È¯ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ç¸¦ ï¿½Ñ´Ù¸ï¿½
 		{
 			m_pIBLIrradianceTextureCloud->UpdateShaderVariables(pd3dCommandList);
 		}
@@ -1006,18 +1006,18 @@ void CScene::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 
 void CScene::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	//pCamera->SetViewportsAndScissorRects(pd3dCommandList); //ºäÆ÷Æ®¿Í ½ÃÀú·ºÆ®¸¦ ½ÇÁ¦ GPU ¸í·É¾î·Î SetÇØÁÖ´Â °Å
+	//pCamera->SetViewportsAndScissorRects(pd3dCommandList); //ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ GPU ï¿½ï¿½ï¿½É¾ï¿½ï¿½ Setï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½
 
-	//pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get()); //·çÆ® ½Ã±×´ÏÃÄ¸¦ GPU¿¡°Ô ³Ñ±â´Â°Å
+	//pd3dCommandList->SetGraphicsRootSignature(m_pd3dRootSignature.Get()); //ï¿½ï¿½Æ® ï¿½Ã±×´ï¿½ï¿½Ä¸ï¿½ GPUï¿½ï¿½ï¿½ï¿½ ï¿½Ñ±ï¿½Â°ï¿½
 	
 	pCamera->SetViewportsAndScissorRects(pd3dCommandList);
 	
-	//ImGui¿¡ ¼³Á¤µÈ ÇÃ·¡±×¸¦ Àü´ÞÇÏ´Â ¿ªÇÒ Áß
+	//ImGuiï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½×¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
 	UpdateShaderVariables(pd3dCommandList);
 
 	if (pCamera)
 	{
-		pCamera->UpdateShaderVariables(pd3dCommandList); //Ä«¸Þ¶óÀÇ »ó¼ö ¹öÆÛ³ª ¿©·¯ GPU³ª Shader¿¡ ³Ñ°Ü¾ßÇÒ ¸í·É¾îµîÀ» UpdateÇØÁÖ´Â ºÎºÐ
+		pCamera->UpdateShaderVariables(pd3dCommandList); //Ä«ï¿½Þ¶ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û³ï¿½ ï¿½ï¿½ï¿½ï¿½ GPUï¿½ï¿½ Shaderï¿½ï¿½ ï¿½Ñ°Ü¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½É¾ï¿½ï¿½ï¿½ï¿½ Updateï¿½ï¿½ï¿½Ö´ï¿½ ï¿½Îºï¿½
 	}
 
 
@@ -1051,10 +1051,11 @@ void CScene::OnGUI(ImGuiIO* pGuiIO)
 	ImGui::Text("Please log in");
 	ImGui::Separator();
 
-	ImGui::InputInt("ID", &m_szLoginID);
-		ImGui::Spacing();
+	ImGui::InputText("ID", m_szLoginID, IM_ARRAYSIZE(m_szLoginID));
+	ImGui::InputText("Password", m_szLoginPW, IM_ARRAYSIZE(m_szLoginPW), ImGuiInputTextFlags_Password);
+	ImGui::Spacing();
 
-	// ·Î±×ÀÎ ¿äÃ» ÁßÀÌ¸é ¹öÆ° ºñÈ°¼ºÈ­
+	// ï¿½Î±ï¿½ï¿½ï¿½ ï¿½ï¿½Ã» ï¿½ï¿½ï¿½Ì¸ï¿½ ï¿½ï¿½Æ° ï¿½ï¿½È°ï¿½ï¿½È­
 	if (m_bLoginRequesting)
 	{
 		ImGui::BeginDisabled();
@@ -1063,7 +1064,7 @@ void CScene::OnGUI(ImGuiIO* pGuiIO)
 
 	if (ImGui::Button("Login", ImVec2(120, 0)))
 	{
-		if (m_szLoginID == 0)
+		if (m_szLoginID[0] == '\0' || m_szLoginPW[0] == '\0')
 		{
 			m_bLoginFailed = true;
 		}
@@ -1071,6 +1072,7 @@ void CScene::OnGUI(ImGuiIO* pGuiIO)
 		{
 			Protocol::C_LOGIN pkt;
 			pkt.set_accountid(m_szLoginID);
+			pkt.set_password(m_szLoginPW);
 			cout << "Login ID: " << m_szLoginID << endl;
 			auto sendBuffer = ServerPacketHandler::MakeSendBuffer(pkt);
 			m_upClientNetwork->SendToServer(sendBuffer);
@@ -1091,7 +1093,7 @@ void CScene::OnGUI(ImGuiIO* pGuiIO)
 	ImGui::End();
 }
 
-//ÆÄÀÏ·Î ºÎÅÍ ¸î°³ÀÇ Texture¸¦ »ç¿ëÇÏ´ÂÁö ÀÐ¾î¿À´Â ÇÔ¼ö
+//ï¿½ï¿½ï¿½Ï·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½î°³ï¿½ï¿½ Textureï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 int CScene::CountTexturesFromFiles(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const std::vector<const char*>& fileList)
 {
 	int total = 0;
@@ -1106,26 +1108,26 @@ int CScene::CountTexturesFromFiles(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
 XMVECTOR CScene::ClosetPointOnOBB(BoundingOrientedBox& obb, XMVECTOR point)
 {
 	
-	// OBB Á¤º¸
+	// OBB ï¿½ï¿½ï¿½ï¿½
 	XMVECTOR vCenter = XMLoadFloat3(&obb.Center);
 	XMVECTOR vExtents = XMLoadFloat3(&obb.Extents);
 	XMVECTOR vOrientation = XMLoadFloat4(&obb.Orientation);
 
-	// point¸¦ OBB ·ÎÄÃ °ø°£À¸·Î º¯È¯
+	// pointï¿½ï¿½ OBB ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
 	XMVECTOR vLocal = XMVectorSubtract(point, vCenter);
 
-	// È¸Àü ¿ªº¯È¯ (world -> obb local)
+	// È¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È¯ (world -> obb local)
 	XMVECTOR vInvRot = XMQuaternionInverse(vOrientation);
 	vLocal = XMVector3Rotate(vLocal, vInvRot);
 
-	// ·ÎÄÃ AABB¿¡¼­ clamp
+	// ï¿½ï¿½ï¿½ï¿½ AABBï¿½ï¿½ï¿½ï¿½ clamp
 	XMVECTOR vClamped = XMVectorClamp(
 		vLocal,
 		XMVectorNegate(vExtents),
 		vExtents
 	);
 
-	// ´Ù½Ã ¿ùµå °ø°£À¸·Î
+	// ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	XMVECTOR vWorld = XMVector3Rotate(vClamped, vOrientation);
 	vWorld = XMVectorAdd(vWorld, vCenter);
 
@@ -1141,7 +1143,7 @@ void CScene::CreateSSAOKernel()
 
 LightControl::LightControl()
 {
-	// Light ±âº» ÃÊ±âÈ­
+	// Light ï¿½âº» ï¿½Ê±ï¿½È­
 	m_Lights.radiance = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	m_Lights.direction = XMFLOAT3(0.0f, -1.0f, 0.0f);
 	m_Lights.position = XMFLOAT3(0.0f, 0.0f, 0.0f);
@@ -1158,7 +1160,7 @@ LightControl::LightControl()
 	m_Lights.viewProj = Matrix4x4::Identity();
 	m_Lights.invProj = Matrix4x4::Identity();
 
-	// Spot Light BoundingSphere ÃÊ±âÈ­
+	// Spot Light BoundingSphere ï¿½Ê±ï¿½È­
 	spotSphere.Center = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	spotSphere.Radius = 0.0f;
 }
@@ -1197,7 +1199,7 @@ void LightControl::SetLight(UINT nType, XMFLOAT3 radiance, XMFLOAT3 direction, X
 
 	m_Lights.radius = 0;
 
-	// Spot Light¿ë BoundingSphere
+	// Spot Lightï¿½ï¿½ BoundingSphere
 	spotSphere.Center = position;
 	spotSphere.Radius = fallOffEnd;
 }
@@ -1335,3 +1337,5 @@ void CScene::ReconcileLocalPlayer(CGameObject* pObj, const XMFLOAT3& serverPosit
 	}
 	m_hasPredictedMovePosition = true;
 }
+
+

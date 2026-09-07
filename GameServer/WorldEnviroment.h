@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "EnvironmentTypes.h"
 #include "WeatherWeight.h"
 
@@ -17,25 +17,25 @@ public:
     void Init();
 
     void ChangeSeason(ESeason season);
+    bool ChangeWorldState(ESeason season, EWeather weather);
 
 
-    void AddMissionScore(uint32_t score);
+    void AddMissionScore(int32_t scoreDelta);
 
     // Getter
     ESeason  GetSeason() const;
     EWeather GetWeather() const;
     int32_t  GetMissionScore() const;
-	int32_t  SetMissionScore(int32_t _score) { return _missionScore = _score; };
     ESeason SetSeason(ESeason _season) { return _season; };
     float GetGrowthMultiplier() const;
     bool IsCropModel(uint32 modelType) const;
     bool IsMissionScoreReached(int32_t requiredScore) const;
 
-    // »õ Å¬¶ó Á¢¼Ó ½Ã »óÅÂ Àü¼Û
+    // ìƒˆ í´ë¼ ì ‘ì† ì‹œ ìƒíƒœ ì „ì†¡
     void SendCurrentStateToClient(class GameSession* session);
 
 private:
-    // ³»ºÎ Ã³¸®
+    // ë‚´ë¶€ ì²˜ë¦¬
     EWeather PickWeatherBySeason(ESeason season);
     void BroadcastWorldState();
 

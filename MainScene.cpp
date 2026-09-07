@@ -686,7 +686,6 @@ bool CMainScene::ProcessInput()
 	Protocol::PlayerState newState = Protocol::PlayerState::IDLE;
 	if (dwDirection)
 	{
-		m_moveDirty = true;
 		m_pPlayer->Move(dwDirection, 249.0f * m_pGameTimer->GetTimeElapsed(), true);
 		if (m_pPlayer->m_pSkinnedAnimationController)
 		{
@@ -701,6 +700,23 @@ bool CMainScene::ProcessInput()
 		m_pPlayer->Move(0, 249.0f*m_pGameTimer->GetTimeElapsed(), true);
 
 		newState = Protocol::PlayerState::IDLE;
+	}
+	XMFLOAT3 currentInput = m_pPlayer->m_xmf3InputDir;
+	const float inputLength = std::sqrt(currentInput.x * currentInput.x + currentInput.z * currentInput.z);
+	if (inputLength > 0.001f)
+	{
+		currentInput.x /= inputLength;
+		currentInput.z /= inputLength;
+	}
+	else
+	{
+		currentInput.x = 0.0f;
+		currentInput.z = 0.0f;
+	}
+	if (std::fabs(currentInput.x - m_lastSentInput.x) > 0.01f ||
+		std::fabs(currentInput.z - m_lastSentInput.z) > 0.01f)
+	{
+		m_moveDirty = true;
 	}
 	if (newState != m_lastSentState)
 	{
@@ -999,6 +1015,23 @@ void CMainScene::SetWorldLevel(int nindex)
 	m_pPlayer->SetMovementBound(m_nCurrentWorldBounds);
 }
 
+void CMainScene::ApplyWorldState(uint32 season, uint32 weather, uint32 missionScore)
+{
+	if (season > 3 || weather > 4)
+	{
+		std::cout << "[WORLD_STATE] invalid season=" << season
+			<< " weather=" << weather << std::endl;
+		return;
+	}
+
+	m_nSeasonIndex = static_cast<int>(season);
+	m_nWeather = static_cast<int>(weather);
+	m_fScore = static_cast<float>(missionScore);
+
+	if (m_pTerrain != nullptr)
+		m_pTerrain->SetSeason(m_nSeasonIndex);
+}
+
 void CMainScene::CreateSSAOKernel()
 {
 	// Map 된 CB 메모리 전체 초기화
@@ -1233,29 +1266,28 @@ void CMainScene::AnimateObjects(float fTimeElapsed)
 	//mjg-추가 애니메이션 땜에 했음.
 	m_moveSendAcc += m_pGameTimer->GetTimeElapsed(); // 이미 쓰는 elapsed
 
-	if (m_moveSendAcc >= 0.05f) // 20Hz
+	const bool needsHeartbeat = m_lastSentState == Protocol::PlayerState::WALK && m_moveSendAcc >= 0.5f;
+	if (m_moveDirty || needsHeartbeat)
 	{
 		const float movePacketDelta = m_moveSendAcc;
 		m_moveSendAcc = 0.0f;
 
-		if (m_moveDirty)
+		XMFLOAT3 input = m_pPlayer->m_xmf3InputDir;
+		const float length = std::sqrt(input.x * input.x + input.z * input.z);
+		if (length > 0.001f)
 		{
-			XMFLOAT3 input = m_pPlayer->m_xmf3InputDir;
-			const float length = std::sqrt(input.x * input.x + input.z * input.z);
-			if (length > 0.001f)
-			{
-				input.x /= length;
-				input.z /= length;
-			}
-			else
-			{
-				input.x = 0.0f;
-				input.z = 0.0f;
-			}
-			SendObjectMoveToServer(m_pPlayer, m_lastSentState,
-				input.x, input.z, movePacketDelta);
-			m_moveDirty = false;
+			input.x /= length;
+			input.z /= length;
 		}
+		else
+		{
+			input.x = 0.0f;
+			input.z = 0.0f;
+		}
+		SendObjectMoveToServer(m_pPlayer, m_lastSentState,
+			input.x, input.z, movePacketDelta);
+		m_lastSentInput = input;
+		m_moveDirty = false;
 	}
 
 	TriggerObjectDestory(); //오브젝트를 돌면서 확인
@@ -1360,10 +1392,17 @@ void CMainScene::UpdateRemoteMovementInterpolation()
 		CGameObject* target = FindObjectByServerID(entry.first);
 		if (target == nullptr)
 			continue;
-		const XMFLOAT3 position(
+		XMFLOAT3 position(
 			from->position.x + (to->position.x - from->position.x) * alpha,
 			from->position.y + (to->position.y - from->position.y) * alpha,
 			from->position.z + (to->position.z - from->position.z) * alpha);
+		if (from == to && renderTimeMs > to->arrivalTimeMs)
+		{
+			const float extrapolationSeconds = (std::min)(
+				static_cast<float>(renderTimeMs - to->arrivalTimeMs) / 1000.0f, 0.5f);
+			position.x += to->direction.x * to->moveSpeed * extrapolationSeconds;
+			position.z += to->direction.z * to->moveSpeed * extrapolationSeconds;
+		}
 		target->SetPosition(position.x, position.y, position.z);
 
 		XMVECTOR rotation = XMQuaternionSlerp(XMLoadFloat4(&from->rotation),
@@ -2281,17 +2320,27 @@ void CMainScene::OnGUI(ImGuiIO* pGuiIO)
 	ImGui::SliderFloat("SoftKnee", &m_fBloomSoftKnee, 0.0f, 1.0f);
 	ImGui::SliderFloat("BloomIntensity", &m_fBloomIntensity, 0.0f, 2.0f);
 	ImGui::Text("Weather");
-	ImGui::RadioButton("Sunny", &m_nWeather, 0);
-	ImGui::RadioButton("Rain", &m_nWeather, 1);
-	ImGui::RadioButton("Snow", &m_nWeather, 2);
-	ImGui::RadioButton("Dust", &m_nWeather, 3);
-	ImGui::RadioButton("Fog", &m_nWeather, 4);
+	bool worldStateChanged = false;
+	worldStateChanged |= ImGui::RadioButton("Sunny", &m_nWeather, 0);
+	worldStateChanged |= ImGui::RadioButton("Rain", &m_nWeather, 1);
+	worldStateChanged |= ImGui::RadioButton("Snow", &m_nWeather, 2);
+	worldStateChanged |= ImGui::RadioButton("Dust", &m_nWeather, 3);
+	worldStateChanged |= ImGui::RadioButton("Fog", &m_nWeather, 4);
 
 	ImGui::Text("Season");
-	ImGui::RadioButton("Spring", &m_nSeasonIndex, 0);
-	ImGui::RadioButton("Summer", &m_nSeasonIndex, 1);
-	ImGui::RadioButton("Fall", &m_nSeasonIndex, 2);
-	ImGui::RadioButton("Winter", &m_nSeasonIndex, 3);
+	worldStateChanged |= ImGui::RadioButton("Spring", &m_nSeasonIndex, 0);
+	worldStateChanged |= ImGui::RadioButton("Summer", &m_nSeasonIndex, 1);
+	worldStateChanged |= ImGui::RadioButton("Fall", &m_nSeasonIndex, 2);
+	worldStateChanged |= ImGui::RadioButton("Winter", &m_nSeasonIndex, 3);
+
+	if (worldStateChanged && m_upClientNetwork)
+	{
+		Protocol::C_DEBUG_WORLD_STATE_CHANGE pkt;
+		pkt.set_season(static_cast<uint32>(m_nSeasonIndex));
+		pkt.set_weather(static_cast<uint32>(m_nWeather));
+		auto sendBuffer = ServerPacketHandler::MakeSendBuffer(pkt);
+		m_upClientNetwork->SendToServer(sendBuffer);
+	}
 
 
 

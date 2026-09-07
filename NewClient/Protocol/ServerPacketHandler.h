@@ -17,14 +17,15 @@ enum : uint16
 	PKT_C_PLACEOBJECTREQ = 1007,
 	PKT_S_OBJECTSPAWN = 1008,
 	PKT_S_WORLD_STATE = 1009,
-	PKT_S_WORLD_INIT = 1010,
-	PKT_C_GATHER_REQ = 1011,
-	PKT_C_OBEJCT_HP = 1012,
-	PKT_S_OBJECT_DESPAWN = 1013,
-	PKT_S_SEEDGROWTH = 1014,
-	PKT_C_SEEDGROWTH = 1015,
-	PKT_C_CROPSTATE = 1016,
-	PKT_S_PLAYER_DESPAWN = 1017,
+	PKT_C_DEBUG_WORLD_STATE_CHANGE = 1010,
+	PKT_S_WORLD_INIT = 1011,
+	PKT_C_GATHER_REQ = 1012,
+	PKT_C_OBEJCT_HP = 1013,
+	PKT_S_OBJECT_DESPAWN = 1014,
+	PKT_S_SEEDGROWTH = 1015,
+	PKT_C_SEEDGROWTH = 1016,
+	PKT_C_CROPSTATE = 1017,
+	PKT_S_PLAYER_DESPAWN = 1018,
 };
 
 // Custom Handlers
@@ -71,6 +72,7 @@ public:
 	static SendBufferRef MakeSendBuffer(Protocol::C_ENTER_GAME& pkt) { return MakeSendBuffer(pkt, PKT_C_ENTER_GAME); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_MOVE& pkt) { return MakeSendBuffer(pkt, PKT_C_MOVE); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_PLACEOBJECTREQ& pkt) { return MakeSendBuffer(pkt, PKT_C_PLACEOBJECTREQ); }
+	static SendBufferRef MakeSendBuffer(Protocol::C_DEBUG_WORLD_STATE_CHANGE& pkt) { return MakeSendBuffer(pkt, PKT_C_DEBUG_WORLD_STATE_CHANGE); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_GATHER_REQ& pkt) { return MakeSendBuffer(pkt, PKT_C_GATHER_REQ); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_OBEJCT_HP& pkt) { return MakeSendBuffer(pkt, PKT_C_OBEJCT_HP); }
 	static SendBufferRef MakeSendBuffer(Protocol::C_SEEDGROWTH& pkt) { return MakeSendBuffer(pkt, PKT_C_SEEDGROWTH); }

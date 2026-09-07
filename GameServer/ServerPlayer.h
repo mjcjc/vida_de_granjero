@@ -14,6 +14,8 @@ public:
 	Protocol::PlayerState   playerState = Protocol::IDLE;
 	GameSessionRef			ownerSession; // Cycle
 	uint64                  lastMoveTimeMs = 0;
+	float                   lastMoveInputX = 0.0f;
+	float                   lastMoveInputZ = 0.0f;
 	uint32                  invalidMoveCount = 0;
 	uint32                  lastProcessedMoveSequence = 0;
 };

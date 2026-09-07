@@ -47,20 +47,6 @@ bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt)
 
 	//cout << "[Handle_C_LOGIN] Login request received for player id: " << pkt.accountid() << " "<<pkt.password() <<endl;
 	// TODO : Validation 체크
-	CreateWorldObjectTableIfNeeded();
-
-	if (IsWorldObjectTableEmpty())
-	{
-		cout << "[WorldInit] DB empty -> load from file" << endl;
-		GWorld.ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage01.txt"), session);
-		GWorld.ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage02.txt"), session);
-		GWorld.ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage03.txt"), session);
-	}
-	else
-	{
-		cout << "[WorldInit] DB exists -> load from DB" << endl;
-		GWorld.LoadFromDB();
-	}
 	{
 		PlayerRef playerRef = gameSession->_currentPlayer; 
 		loginPkt.set_success(true);
@@ -207,14 +193,16 @@ bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 		inputX /= inputLength;
 		inputZ /= inputLength;
 	}
-	const float clientDelta = std::clamp(pkt.delta_time(), 0.001f, 0.1f);
-	const float simulationDelta = (std::min)(clientDelta, std::clamp(elapsedSeconds, 0.001f, 0.1f));
+	const float clientDelta = std::clamp(pkt.delta_time(), 0.001f, 0.5f);
+	const float simulationDelta = (std::min)(clientDelta, std::clamp(elapsedSeconds, 0.001f, 0.5f));
 	constexpr float movementSpeed = 6.0f;
 	const ServerPosition requested{
-		current.x + inputX * movementSpeed * simulationDelta,
+		current.x + myPlayer->lastMoveInputX * movementSpeed * simulationDelta,
 		requestedTransform.py(),
-		current.z + inputZ * movementSpeed * simulationDelta };
-	std::vector<NavigationObstacle> obstacles = GWorld.GetNavigationObstacles();
+		current.z + myPlayer->lastMoveInputZ * movementSpeed * simulationDelta };
+	const std::vector<NavigationObstacle> staticObstacles = GWorld.GetNavigationObstacles();
+	GNavigation.UpdateWalkableGrid(staticObstacles);
+	std::vector<NavigationObstacle> dynamicObstacles;
 	const float playerRadius = ServerNavigation::GetPlayerRadius();
 	GSessionManager.ForEachSession([&](const GameSessionRef& otherSession)
 	{
@@ -224,13 +212,13 @@ bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 
 		const float otherX = otherPlayer->ts.px();
 		const float otherZ = otherPlayer->ts.pz();
-		obstacles.push_back(NavigationObstacle{
+		dynamicObstacles.push_back(NavigationObstacle{
 			otherPlayer->playerId,
 			otherX - playerRadius, otherX + playerRadius,
 			otherZ - playerRadius, otherZ + playerRadius });
 	});
 	const MoveValidationResult validation = GNavigation.ValidateMove(
-		current, requested, simulationDelta, obstacles);
+		current, requested, simulationDelta, dynamicObstacles);
 
 	if (validation.corrected)
 	{
@@ -252,6 +240,8 @@ bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 	myPlayer->ts.set_pz(validation.position.z);
 	myPlayer->playerState = pkt.player().state();
 	myPlayer->lastProcessedMoveSequence = pkt.sequence();
+	myPlayer->lastMoveInputX = inputX;
+	myPlayer->lastMoveInputZ = inputZ;
 
 	Protocol::S_MOVE movePkt;
 	movePkt.set_playerid(myPlayer->playerId);
@@ -260,6 +250,9 @@ bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt)
 	movePkt.mutable_player()->mutable_transform()->CopyFrom(myPlayer->ts);
 	movePkt.set_last_processed_sequence(myPlayer->lastProcessedMoveSequence);
 	movePkt.set_server_tick(static_cast<uint32>(nowMs));
+	movePkt.set_direction_x(inputX);
+	movePkt.set_direction_z(inputZ);
+	movePkt.set_move_speed(inputLength > 0.001f ? movementSpeed : 0.0f);
 
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(movePkt);
 	GSessionManager.Broadcast(sendBuffer);

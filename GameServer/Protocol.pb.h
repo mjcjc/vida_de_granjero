@@ -1201,6 +1201,9 @@ class S_MOVE final :
     kPlayerIdFieldNumber = 1,
     kLastProcessedSequenceFieldNumber = 3,
     kServerTickFieldNumber = 4,
+    kDirectionXFieldNumber = 5,
+    kDirectionZFieldNumber = 6,
+    kMoveSpeedFieldNumber = 7,
   };
   // .Protocol.Player player = 2;
   bool has_player() const;
@@ -1247,6 +1250,33 @@ class S_MOVE final :
   void _internal_set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value);
   public:
 
+  // float direction_x = 5;
+  void clear_direction_x();
+  float direction_x() const;
+  void set_direction_x(float value);
+  private:
+  float _internal_direction_x() const;
+  void _internal_set_direction_x(float value);
+  public:
+
+  // float direction_z = 6;
+  void clear_direction_z();
+  float direction_z() const;
+  void set_direction_z(float value);
+  private:
+  float _internal_direction_z() const;
+  void _internal_set_direction_z(float value);
+  public:
+
+  // float move_speed = 7;
+  void clear_move_speed();
+  float move_speed() const;
+  void set_move_speed(float value);
+  private:
+  float _internal_move_speed() const;
+  void _internal_set_move_speed(float value);
+  public:
+
   // @@protoc_insertion_point(class_scope:Protocol.S_MOVE)
  private:
   class _Internal;
@@ -1258,6 +1288,9 @@ class S_MOVE final :
   ::PROTOBUF_NAMESPACE_ID::uint64 playerid_;
   ::PROTOBUF_NAMESPACE_ID::uint32 last_processed_sequence_;
   ::PROTOBUF_NAMESPACE_ID::uint32 server_tick_;
+  float direction_x_;
+  float direction_z_;
+  float move_speed_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_Protocol_2eproto;
 };
@@ -3710,6 +3743,66 @@ inline void S_MOVE::_internal_set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 va
 inline void S_MOVE::set_server_tick(::PROTOBUF_NAMESPACE_ID::uint32 value) {
   _internal_set_server_tick(value);
   // @@protoc_insertion_point(field_set:Protocol.S_MOVE.server_tick)
+}
+
+// float direction_x = 5;
+inline void S_MOVE::clear_direction_x() {
+  direction_x_ = 0;
+}
+inline float S_MOVE::_internal_direction_x() const {
+  return direction_x_;
+}
+inline float S_MOVE::direction_x() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MOVE.direction_x)
+  return _internal_direction_x();
+}
+inline void S_MOVE::_internal_set_direction_x(float value) {
+  
+  direction_x_ = value;
+}
+inline void S_MOVE::set_direction_x(float value) {
+  _internal_set_direction_x(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MOVE.direction_x)
+}
+
+// float direction_z = 6;
+inline void S_MOVE::clear_direction_z() {
+  direction_z_ = 0;
+}
+inline float S_MOVE::_internal_direction_z() const {
+  return direction_z_;
+}
+inline float S_MOVE::direction_z() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MOVE.direction_z)
+  return _internal_direction_z();
+}
+inline void S_MOVE::_internal_set_direction_z(float value) {
+  
+  direction_z_ = value;
+}
+inline void S_MOVE::set_direction_z(float value) {
+  _internal_set_direction_z(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MOVE.direction_z)
+}
+
+// float move_speed = 7;
+inline void S_MOVE::clear_move_speed() {
+  move_speed_ = 0;
+}
+inline float S_MOVE::_internal_move_speed() const {
+  return move_speed_;
+}
+inline float S_MOVE::move_speed() const {
+  // @@protoc_insertion_point(field_get:Protocol.S_MOVE.move_speed)
+  return _internal_move_speed();
+}
+inline void S_MOVE::_internal_set_move_speed(float value) {
+  
+  move_speed_ = value;
+}
+inline void S_MOVE::set_move_speed(float value) {
+  _internal_set_move_speed(value);
+  // @@protoc_insertion_point(field_set:Protocol.S_MOVE.move_speed)
 }
 
 // -------------------------------------------------------------------

@@ -213,6 +213,8 @@ bool Handle_S_MOVE(PacketSessionRef& session, Protocol::S_MOVE& pkt)
 	snapshot.serverTick = pkt.server_tick();
 	snapshot.position = XMFLOAT3(t.px(), t.py(), t.pz());
 	snapshot.rotation = XMFLOAT4(t.qx(), t.qy(), t.qz(), t.qw());
+	snapshot.direction = XMFLOAT3(pkt.direction_x(), 0.0f, pkt.direction_z());
+	snapshot.moveSpeed = pkt.move_speed();
 	snapshot.state = pkt.player().state();
 	scene->QueueRemoteMovementSnapshot(pkt.playerid(), snapshot);
 
@@ -361,9 +363,13 @@ bool Handle_S_WORLD_STATE(PacketSessionRef& session, Protocol::S_WORLD_STATE& pk
 	//	<< " score=" << pkt.mission_score()
 	//	<< "\n";
 	auto* scene = dynamic_cast<CMainScene*>(CSceneManager::GetInstance().GetTopScene());
-	scene->m_nWeather = pkt.weather();
-	scene->m_nSeasonIndex = pkt.season();
-	scene->m_fScore = pkt.mission_score();
+	if (scene == nullptr)
+	{
+		std::cout << "[WORLD_STATE] MainScene is not ready" << std::endl;
+		return true;
+	}
+
+	scene->ApplyWorldState(pkt.season(), pkt.weather(), pkt.mission_score());
 	return true;
 }
 

@@ -17,14 +17,15 @@ enum : uint16
 	PKT_C_PLACEOBJECTREQ = 1007,
 	PKT_S_OBJECTSPAWN = 1008,
 	PKT_S_WORLD_STATE = 1009,
-	PKT_S_WORLD_INIT = 1010,
-	PKT_C_GATHER_REQ = 1011,
-	PKT_C_OBEJCT_HP = 1012,
-	PKT_S_OBJECT_DESPAWN = 1013,
-	PKT_S_SEEDGROWTH = 1014,
-	PKT_C_SEEDGROWTH = 1015,
-	PKT_C_CROPSTATE = 1016,
-	PKT_S_PLAYER_DESPAWN = 1017,
+	PKT_C_DEBUG_WORLD_STATE_CHANGE = 1010,
+	PKT_S_WORLD_INIT = 1011,
+	PKT_C_GATHER_REQ = 1012,
+	PKT_C_OBEJCT_HP = 1013,
+	PKT_S_OBJECT_DESPAWN = 1014,
+	PKT_S_SEEDGROWTH = 1015,
+	PKT_C_SEEDGROWTH = 1016,
+	PKT_C_CROPSTATE = 1017,
+	PKT_S_PLAYER_DESPAWN = 1018,
 };
 
 // Custom Handlers
@@ -33,6 +34,7 @@ bool Handle_C_LOGIN(PacketSessionRef& session, Protocol::C_LOGIN& pkt);
 bool Handle_C_ENTER_GAME(PacketSessionRef& session, Protocol::C_ENTER_GAME& pkt);
 bool Handle_C_MOVE(PacketSessionRef& session, Protocol::C_MOVE& pkt);
 bool Handle_C_PLACEOBJECTREQ(PacketSessionRef& session, Protocol::C_PLACEOBJECTREQ& pkt);
+bool Handle_C_DEBUG_WORLD_STATE_CHANGE(PacketSessionRef& session, Protocol::C_DEBUG_WORLD_STATE_CHANGE& pkt);
 bool Handle_C_GATHER_REQ(PacketSessionRef& session, Protocol::C_GATHER_REQ& pkt);
 bool Handle_C_OBEJCT_HP(PacketSessionRef& session, Protocol::C_OBEJCT_HP& pkt);
 bool Handle_C_SEEDGROWTH(PacketSessionRef& session, Protocol::C_SEEDGROWTH& pkt);
@@ -49,6 +51,7 @@ public:
 		GPacketHandler[PKT_C_ENTER_GAME] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_ENTER_GAME>(Handle_C_ENTER_GAME, session, buffer, len); };
 		GPacketHandler[PKT_C_MOVE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_MOVE>(Handle_C_MOVE, session, buffer, len); };
 		GPacketHandler[PKT_C_PLACEOBJECTREQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_PLACEOBJECTREQ>(Handle_C_PLACEOBJECTREQ, session, buffer, len); };
+		GPacketHandler[PKT_C_DEBUG_WORLD_STATE_CHANGE] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_DEBUG_WORLD_STATE_CHANGE>(Handle_C_DEBUG_WORLD_STATE_CHANGE, session, buffer, len); };
 		GPacketHandler[PKT_C_GATHER_REQ] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_GATHER_REQ>(Handle_C_GATHER_REQ, session, buffer, len); };
 		GPacketHandler[PKT_C_OBEJCT_HP] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_OBEJCT_HP>(Handle_C_OBEJCT_HP, session, buffer, len); };
 		GPacketHandler[PKT_C_SEEDGROWTH] = [](PacketSessionRef& session, BYTE* buffer, int32 len) { return HandlePacket<Protocol::C_SEEDGROWTH>(Handle_C_SEEDGROWTH, session, buffer, len); };

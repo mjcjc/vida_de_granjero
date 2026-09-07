@@ -25,10 +25,6 @@ void GameSession::OnConnected()
 	cout << "[GameSession] New player connected with ID " << _currentPlayer->playerId << endl;
     // 방/매니저에 등록
   
-    Protocol::S_LOGIN pkt;              // 이름만 로그인일 뿐, 지금은 단순 ID통지용으로 사용
-
-    auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
-    Send(sendBuffer);                   // 이 세션에만 전송
 }
 
 
@@ -37,8 +33,6 @@ void GameSession::OnDisconnected()
     uint64 pid = _currentPlayer->playerId;
     if (pid != 0)
     {
-
-        GWorld.PlayerDespawn(pid);
 
         Protocol::S_PLAYER_DESPAWN pkt;
         pkt.set_playerid(pid);

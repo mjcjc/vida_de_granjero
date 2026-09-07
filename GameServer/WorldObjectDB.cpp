@@ -5,43 +5,40 @@
 
 void CreateWorldObjectTableIfNeeded()
 {
-    DBManager::Enqueue([]()
-        {
-            auto conn = DBManager::Pool().Acquire();
-            if (conn == nullptr)
-                return;
+    auto conn = DBManager::Pool().Acquire();
+    if (conn == nullptr)
+        return;
 
-            try
-            {
-                std::unique_ptr<sql::PreparedStatement> pstmt(
-                    conn->prepareStatement(
-                        "CREATE TABLE IF NOT EXISTS world_objects ("
-                        "object_id BIGINT PRIMARY KEY,"
-                        "model_type INT NOT NULL,"
-                        "pos_x FLOAT NOT NULL DEFAULT 0,"
-                        "pos_y FLOAT NOT NULL DEFAULT 0,"
-                        "pos_z FLOAT NOT NULL DEFAULT 0,"
-                        "rot_x FLOAT NOT NULL DEFAULT 0,"
-                        "rot_y FLOAT NOT NULL DEFAULT 0,"
-                        "rot_z FLOAT NOT NULL DEFAULT 0,"
-                        "rot_w FLOAT NOT NULL DEFAULT 1,"
-                        "hp INT NOT NULL DEFAULT 0,"
-                        "growth INT NOT NULL DEFAULT 0,"
-                        "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP "
-                        "ON UPDATE CURRENT_TIMESTAMP)"
-                    )
-                );
+    try
+    {
+        std::unique_ptr<sql::PreparedStatement> pstmt(
+            conn->prepareStatement(
+                "CREATE TABLE IF NOT EXISTS world_objects ("
+                "object_id BIGINT PRIMARY KEY,"
+                "model_type INT NOT NULL,"
+                "pos_x FLOAT NOT NULL DEFAULT 0,"
+                "pos_y FLOAT NOT NULL DEFAULT 0,"
+                "pos_z FLOAT NOT NULL DEFAULT 0,"
+                "rot_x FLOAT NOT NULL DEFAULT 0,"
+                "rot_y FLOAT NOT NULL DEFAULT 0,"
+                "rot_z FLOAT NOT NULL DEFAULT 0,"
+                "rot_w FLOAT NOT NULL DEFAULT 1,"
+                "hp INT NOT NULL DEFAULT 0,"
+                "growth INT NOT NULL DEFAULT 0,"
+                "updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP "
+                "ON UPDATE CURRENT_TIMESTAMP)"
+            )
+        );
 
-                pstmt->execute();
-            }
-            catch (const sql::SQLException& e)
-            {
-                cout << "[DB] CreateWorldObjectTableIfNeeded failed: "
-                    << e.what() << endl;
-            }
+        pstmt->execute();
+    }
+    catch (const sql::SQLException& e)
+    {
+        cout << "[DB] CreateWorldObjectTableIfNeeded failed: "
+            << e.what() << endl;
+    }
 
-            DBManager::Pool().Release(std::move(conn));
-        });
+    DBManager::Pool().Release(std::move(conn));
 }
 
 void UpsertWorldObjectToDB(const DBWorldObjectData& data)

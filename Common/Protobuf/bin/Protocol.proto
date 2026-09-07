@@ -49,18 +49,21 @@ message S_MOVE
 	Player player = 2;
 	uint32 last_processed_sequence = 3;
 	uint32 server_tick = 4;
+	float direction_x = 5;
+	float direction_z = 6;
+	float move_speed = 7;
 }
 message C_PLACEOBJECTREQ {
-  uint32 model_type = 1;      // EObjectModelType (int)
-  Transform transform = 2;    // ��ġ�� ������Ʈ�� ��ġ �� ȸ�� ����
-  uint32 req_id = 3;          // Ŭ�� ��û �ĺ���
+  uint32 model_type = 1;      
+  Transform transform = 2;   
+  uint32 req_id = 3;          
 }
 message S_OBJECTSPAWN {
-  uint64 object_id = 1;       // ������ �߱��� ���� ID
+  uint64 object_id = 1;      
   uint32 model_type = 2;
   Transform transform = 3;
   uint64 owner_player_id = 4;
-  uint64 temp_id = 5;         // Ŭ�� ���� �ӽ� ID
+  uint64 temp_id = 5;        
 }
 message S_WORLD_STATE
 {

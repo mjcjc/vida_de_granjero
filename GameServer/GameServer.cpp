@@ -33,6 +33,7 @@ int main()
 
 	ASSERT_CRASH(DBManager::Init(cfg, 4));
 	CreateWorldObjectTableIfNeeded();
+	ASSERT_CRASH(GWorld.LoadInitialWorld());
 
 	ClientPacketHandler::Init();
 	auto gameLogic = std::make_unique<GameLogic>(&GWorldEnv);

@@ -1273,7 +1273,7 @@ void CScene::SendObjectMoveToServer(CGameObject* pObj, Protocol::PlayerState sta
 	pkt.set_client_tick(::GetTickCount());
 	pkt.set_input_x(inputX);
 	pkt.set_input_z(inputZ);
-	const float safeDeltaTime = deltaTime < 0.0f ? 0.0f : (deltaTime > 0.1f ? 0.1f : deltaTime);
+	const float safeDeltaTime = deltaTime < 0.0f ? 0.0f : (deltaTime > 0.5f ? 0.5f : deltaTime);
 	pkt.set_delta_time(safeDeltaTime);
 
 	//std::cout << "STate" << pkt.mutable_player()->state() << std::endl;

@@ -19,6 +19,8 @@ struct RemoteMovementSnapshot
 	uint32 serverTick = 0;
 	XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 rotation = { 0.0f, 0.0f, 0.0f, 1.0f };
+	XMFLOAT3 direction = { 0.0f, 0.0f, 0.0f };
+	float moveSpeed = 0.0f;
 	Protocol::PlayerState state = Protocol::PlayerState::IDLE;
 };
 ///////////////////////////////////// <summary>//////////////////////////////////////
@@ -205,6 +207,7 @@ public:
 	RECT m_nWorldBounds[4];
 	RECT m_nCurrentWorldBounds;
 	void SetWorldLevel(int nindex); //월드에 단계를 지정 (봄 : 0, 여름 : 1, 가을 : 2, 겨울 : 3)
+	void ApplyWorldState(uint32 season, uint32 weather, uint32 missionScore);
 
 	CComputeShader* m_pComputeShader; // 컴퓨트 파이프라인 확장에 사용할 Shader
 
@@ -258,6 +261,7 @@ public:
 		float m_moveSendAcc = 0.0f;
 		bool  m_moveDirty = false;
 		XMFLOAT3 m_lastSentPos = { 0,0,0 }; // 선택(변화 감지용)
+		XMFLOAT3 m_lastSentInput = { 0,0,0 };
 		Protocol::PlayerState m_lastSentState = Protocol::PlayerState::IDLE;
 		void QueueRemoteMovementSnapshot(uint64 playerId, const RemoteMovementSnapshot& snapshot);
 		void UpdateRemoteMovementInterpolation();

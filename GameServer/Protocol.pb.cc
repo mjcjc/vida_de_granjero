@@ -105,7 +105,10 @@ constexpr S_MOVE::S_MOVE(
   : player_(nullptr)
   , playerid_(uint64_t{0u})
   , last_processed_sequence_(0u)
-  , server_tick_(0u){}
+  , server_tick_(0u)
+  , direction_x_(0)
+  , direction_z_(0)
+  , move_speed_(0){}
 struct S_MOVEDefaultTypeInternal {
   constexpr S_MOVEDefaultTypeInternal()
     : _instance(::PROTOBUF_NAMESPACE_ID::internal::ConstantInitialized{}) {}
@@ -337,6 +340,9 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_Protocol_2eproto::offsets[] PR
   PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, player_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, last_processed_sequence_),
   PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, server_tick_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, direction_x_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, direction_z_),
+  PROTOBUF_FIELD_OFFSET(::Protocol::S_MOVE, move_speed_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::Protocol::C_PLACEOBJECTREQ, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -434,18 +440,18 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 28, -1, sizeof(::Protocol::S_OTHER)},
   { 35, -1, sizeof(::Protocol::C_MOVE)},
   { 47, -1, sizeof(::Protocol::S_MOVE)},
-  { 56, -1, sizeof(::Protocol::C_PLACEOBJECTREQ)},
-  { 64, -1, sizeof(::Protocol::S_OBJECTSPAWN)},
-  { 74, -1, sizeof(::Protocol::S_WORLD_STATE)},
-  { 82, -1, sizeof(::Protocol::C_DEBUG_WORLD_STATE_CHANGE)},
-  { 89, -1, sizeof(::Protocol::S_WORLD_INIT)},
-  { 95, -1, sizeof(::Protocol::C_GATHER_REQ)},
-  { 101, -1, sizeof(::Protocol::C_OBEJCT_HP)},
-  { 108, -1, sizeof(::Protocol::S_OBJECT_DESPAWN)},
-  { 116, -1, sizeof(::Protocol::S_SEEDGROWTH)},
-  { 124, -1, sizeof(::Protocol::C_SEEDGROWTH)},
-  { 131, -1, sizeof(::Protocol::C_CROPSTATE)},
-  { 138, -1, sizeof(::Protocol::S_PLAYER_DESPAWN)},
+  { 59, -1, sizeof(::Protocol::C_PLACEOBJECTREQ)},
+  { 67, -1, sizeof(::Protocol::S_OBJECTSPAWN)},
+  { 77, -1, sizeof(::Protocol::S_WORLD_STATE)},
+  { 85, -1, sizeof(::Protocol::C_DEBUG_WORLD_STATE_CHANGE)},
+  { 92, -1, sizeof(::Protocol::S_WORLD_INIT)},
+  { 98, -1, sizeof(::Protocol::C_GATHER_REQ)},
+  { 104, -1, sizeof(::Protocol::C_OBEJCT_HP)},
+  { 111, -1, sizeof(::Protocol::S_OBJECT_DESPAWN)},
+  { 119, -1, sizeof(::Protocol::S_SEEDGROWTH)},
+  { 127, -1, sizeof(::Protocol::C_SEEDGROWTH)},
+  { 134, -1, sizeof(::Protocol::C_CROPSTATE)},
+  { 141, -1, sizeof(::Protocol::S_PLAYER_DESPAWN)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -483,30 +489,32 @@ const char descriptor_table_protodef_Protocol_2eproto[] PROTOBUF_SECTION_VARIABL
   " \n\006player\030\002 \001(\0132\020.Protocol.Player\022\020\n\010seq"
   "uence\030\003 \001(\r\022\023\n\013client_tick\030\004 \001(\r\022\017\n\007inpu"
   "t_x\030\005 \001(\002\022\017\n\007input_z\030\006 \001(\002\022\022\n\ndelta_time"
-  "\030\007 \001(\002\"r\n\006S_MOVE\022\020\n\010playerId\030\001 \001(\004\022 \n\006pl"
-  "ayer\030\002 \001(\0132\020.Protocol.Player\022\037\n\027last_pro"
-  "cessed_sequence\030\003 \001(\r\022\023\n\013server_tick\030\004 \001"
-  "(\r\"^\n\020C_PLACEOBJECTREQ\022\022\n\nmodel_type\030\001 \001"
-  "(\r\022&\n\ttransform\030\002 \001(\0132\023.Protocol.Transfo"
-  "rm\022\016\n\006req_id\030\003 \001(\r\"\210\001\n\rS_OBJECTSPAWN\022\021\n\t"
-  "object_id\030\001 \001(\004\022\022\n\nmodel_type\030\002 \001(\r\022&\n\tt"
-  "ransform\030\003 \001(\0132\023.Protocol.Transform\022\027\n\017o"
-  "wner_player_id\030\004 \001(\004\022\017\n\007temp_id\030\005 \001(\004\"G\n"
-  "\rS_WORLD_STATE\022\016\n\006season\030\001 \001(\r\022\017\n\007weathe"
-  "r\030\002 \001(\r\022\025\n\rmission_score\030\003 \001(\r\"=\n\032C_DEBU"
-  "G_WORLD_STATE_CHANGE\022\016\n\006season\030\001 \001(\r\022\017\n\007"
-  "weather\030\002 \001(\r\"6\n\014S_WORLD_INIT\022&\n\007objects"
-  "\030\001 \003(\0132\025.Protocol.WorldObject\"!\n\014C_GATHE"
-  "R_REQ\022\021\n\tobject_id\030\001 \001(\r\",\n\013C_OBEJCT_HP\022"
-  "\021\n\tobject_id\030\001 \001(\004\022\n\n\002hp\030\002 \001(\004\"B\n\020S_OBJE"
-  "CT_DESPAWN\022\021\n\tobject_id\030\001 \001(\r\022\n\n\002hp\030\002 \001("
-  "\r\022\017\n\007temp_id\030\003 \001(\r\"Y\n\014S_SEEDGROWTH\022\021\n\tob"
-  "ject_id\030\001 \001(\r\022&\n\ttransform\030\002 \001(\0132\023.Proto"
-  "col.Transform\022\016\n\006growth\030\003 \001(\r\"8\n\014C_SEEDG"
-  "ROWTH\022\021\n\tobject_id\030\001 \001(\r\022\025\n\rCropCheckCel"
-  "l\030\002 \001(\r\"4\n\013C_CROPSTATE\022\022\n\nmodel_type\030\001 \001"
-  "(\004\022\021\n\tobject_id\030\002 \001(\004\"$\n\020S_PLAYER_DESPAW"
-  "N\022\020\n\010playerid\030\001 \001(\004b\006proto3"
+  "\030\007 \001(\002\"\260\001\n\006S_MOVE\022\020\n\010playerId\030\001 \001(\004\022 \n\006p"
+  "layer\030\002 \001(\0132\020.Protocol.Player\022\037\n\027last_pr"
+  "ocessed_sequence\030\003 \001(\r\022\023\n\013server_tick\030\004 "
+  "\001(\r\022\023\n\013direction_x\030\005 \001(\002\022\023\n\013direction_z\030"
+  "\006 \001(\002\022\022\n\nmove_speed\030\007 \001(\002\"^\n\020C_PLACEOBJE"
+  "CTREQ\022\022\n\nmodel_type\030\001 \001(\r\022&\n\ttransform\030\002"
+  " \001(\0132\023.Protocol.Transform\022\016\n\006req_id\030\003 \001("
+  "\r\"\210\001\n\rS_OBJECTSPAWN\022\021\n\tobject_id\030\001 \001(\004\022\022"
+  "\n\nmodel_type\030\002 \001(\r\022&\n\ttransform\030\003 \001(\0132\023."
+  "Protocol.Transform\022\027\n\017owner_player_id\030\004 "
+  "\001(\004\022\017\n\007temp_id\030\005 \001(\004\"G\n\rS_WORLD_STATE\022\016\n"
+  "\006season\030\001 \001(\r\022\017\n\007weather\030\002 \001(\r\022\025\n\rmissio"
+  "n_score\030\003 \001(\r\"=\n\032C_DEBUG_WORLD_STATE_CHA"
+  "NGE\022\016\n\006season\030\001 \001(\r\022\017\n\007weather\030\002 \001(\r\"6\n\014"
+  "S_WORLD_INIT\022&\n\007objects\030\001 \003(\0132\025.Protocol"
+  ".WorldObject\"!\n\014C_GATHER_REQ\022\021\n\tobject_i"
+  "d\030\001 \001(\r\",\n\013C_OBEJCT_HP\022\021\n\tobject_id\030\001 \001("
+  "\004\022\n\n\002hp\030\002 \001(\004\"B\n\020S_OBJECT_DESPAWN\022\021\n\tobj"
+  "ect_id\030\001 \001(\r\022\n\n\002hp\030\002 \001(\r\022\017\n\007temp_id\030\003 \001("
+  "\r\"Y\n\014S_SEEDGROWTH\022\021\n\tobject_id\030\001 \001(\r\022&\n\t"
+  "transform\030\002 \001(\0132\023.Protocol.Transform\022\016\n\006"
+  "growth\030\003 \001(\r\"8\n\014C_SEEDGROWTH\022\021\n\tobject_i"
+  "d\030\001 \001(\r\022\025\n\rCropCheckCell\030\002 \001(\r\"4\n\013C_CROP"
+  "STATE\022\022\n\nmodel_type\030\001 \001(\004\022\021\n\tobject_id\030\002"
+  " \001(\004\"$\n\020S_PLAYER_DESPAWN\022\020\n\010playerid\030\001 \001"
+  "(\004b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_Protocol_2eproto_deps[2] = {
   &::descriptor_table_Enum_2eproto,
@@ -514,7 +522,7 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_Protocol_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_Protocol_2eproto = {
-  false, false, 1427, descriptor_table_protodef_Protocol_2eproto, "Protocol.proto", 
+  false, false, 1490, descriptor_table_protodef_Protocol_2eproto, "Protocol.proto", 
   &descriptor_table_Protocol_2eproto_once, descriptor_table_Protocol_2eproto_deps, 2, 19,
   schemas, file_default_instances, TableStruct_Protocol_2eproto::offsets,
   file_level_metadata_Protocol_2eproto, file_level_enum_descriptors_Protocol_2eproto, file_level_service_descriptors_Protocol_2eproto,
@@ -2057,16 +2065,16 @@ S_MOVE::S_MOVE(const S_MOVE& from)
     player_ = nullptr;
   }
   ::memcpy(&playerid_, &from.playerid_,
-    static_cast<size_t>(reinterpret_cast<char*>(&server_tick_) -
-    reinterpret_cast<char*>(&playerid_)) + sizeof(server_tick_));
+    static_cast<size_t>(reinterpret_cast<char*>(&move_speed_) -
+    reinterpret_cast<char*>(&playerid_)) + sizeof(move_speed_));
   // @@protoc_insertion_point(copy_constructor:Protocol.S_MOVE)
 }
 
 void S_MOVE::SharedCtor() {
 ::memset(reinterpret_cast<char*>(this) + static_cast<size_t>(
     reinterpret_cast<char*>(&player_) - reinterpret_cast<char*>(this)),
-    0, static_cast<size_t>(reinterpret_cast<char*>(&server_tick_) -
-    reinterpret_cast<char*>(&player_)) + sizeof(server_tick_));
+    0, static_cast<size_t>(reinterpret_cast<char*>(&move_speed_) -
+    reinterpret_cast<char*>(&player_)) + sizeof(move_speed_));
 }
 
 S_MOVE::~S_MOVE() {
@@ -2101,8 +2109,8 @@ void S_MOVE::Clear() {
   }
   player_ = nullptr;
   ::memset(&playerid_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&server_tick_) -
-      reinterpret_cast<char*>(&playerid_)) + sizeof(server_tick_));
+      reinterpret_cast<char*>(&move_speed_) -
+      reinterpret_cast<char*>(&playerid_)) + sizeof(move_speed_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -2138,6 +2146,27 @@ const char* S_MOVE::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::int
         if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 32)) {
           server_tick_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint32(&ptr);
           CHK_(ptr);
+        } else goto handle_unusual;
+        continue;
+      // float direction_x = 5;
+      case 5:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 45)) {
+          direction_x_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float direction_z = 6;
+      case 6:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 53)) {
+          direction_z_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
+        } else goto handle_unusual;
+        continue;
+      // float move_speed = 7;
+      case 7:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 61)) {
+          move_speed_ = ::PROTOBUF_NAMESPACE_ID::internal::UnalignedLoad<float>(ptr);
+          ptr += sizeof(float);
         } else goto handle_unusual;
         continue;
       default: {
@@ -2195,6 +2224,24 @@ failure:
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteUInt32ToArray(4, this->_internal_server_tick(), target);
   }
 
+  // float direction_x = 5;
+  if (!(this->direction_x() <= 0 && this->direction_x() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(5, this->_internal_direction_x(), target);
+  }
+
+  // float direction_z = 6;
+  if (!(this->direction_z() <= 0 && this->direction_z() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(6, this->_internal_direction_z(), target);
+  }
+
+  // float move_speed = 7;
+  if (!(this->move_speed() <= 0 && this->move_speed() >= 0)) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteFloatToArray(7, this->_internal_move_speed(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -2237,6 +2284,21 @@ size_t S_MOVE::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt32Size(
         this->_internal_server_tick());
+  }
+
+  // float direction_x = 5;
+  if (!(this->direction_x() <= 0 && this->direction_x() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float direction_z = 6;
+  if (!(this->direction_z() <= 0 && this->direction_z() >= 0)) {
+    total_size += 1 + 4;
+  }
+
+  // float move_speed = 7;
+  if (!(this->move_speed() <= 0 && this->move_speed() >= 0)) {
+    total_size += 1 + 4;
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -2282,6 +2344,15 @@ void S_MOVE::MergeFrom(const S_MOVE& from) {
   if (from.server_tick() != 0) {
     _internal_set_server_tick(from._internal_server_tick());
   }
+  if (!(from.direction_x() <= 0 && from.direction_x() >= 0)) {
+    _internal_set_direction_x(from._internal_direction_x());
+  }
+  if (!(from.direction_z() <= 0 && from.direction_z() >= 0)) {
+    _internal_set_direction_z(from._internal_direction_z());
+  }
+  if (!(from.move_speed() <= 0 && from.move_speed() >= 0)) {
+    _internal_set_move_speed(from._internal_move_speed());
+  }
 }
 
 void S_MOVE::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -2306,8 +2377,8 @@ void S_MOVE::InternalSwap(S_MOVE* other) {
   using std::swap;
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(S_MOVE, server_tick_)
-      + sizeof(S_MOVE::server_tick_)
+      PROTOBUF_FIELD_OFFSET(S_MOVE, move_speed_)
+      + sizeof(S_MOVE::move_speed_)
       - PROTOBUF_FIELD_OFFSET(S_MOVE, player_)>(
           reinterpret_cast<char*>(&player_),
           reinterpret_cast<char*>(&other->player_));

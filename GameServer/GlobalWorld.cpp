@@ -33,8 +33,9 @@ ObjectId GlobalWorld::ClSpawn(uint64 tempid,uint32 modelType, uint32 hp, float x
 		<< " objectId=" << tempid
         << " model=" << modelType
         << " (seed planted)\n";
-    _objects.emplace(tempid, obj);
-    return tempid;
+	_objects.emplace(tempid, obj);
+	GNavigation.MarkGridDirty();
+	return tempid;
 }
 //기존은 위
 ObjectId GlobalWorld::Spawn(
@@ -80,8 +81,9 @@ ObjectId GlobalWorld::Spawn(
         << " tempId=" << tempid
         << " model=" << modelType << "\n";
 
-    _objects.emplace(id, obj);
-    return id;
+	_objects.emplace(id, obj);
+	GNavigation.MarkGridDirty();
+	return id;
 }
 
 
@@ -170,8 +172,11 @@ void GlobalWorld::SendSnapshotTo(PacketSessionRef& session)
         o->set_temp_id(it.id);
     }
 
-    auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
-    session->Send(sendBuffer);
+    if (session)
+    {
+        auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
+        session->Send(sendBuffer);
+    }
 }
 //bool GlobalWorld::Despawn(ObjectId objectId, uint64 requestPlayerId)
 //{
@@ -233,8 +238,9 @@ bool GlobalWorld::SetModelType(uint64 objectId, uint32 newModelType)
     if (!obj.alive)
         return false;
 
-    obj.modelType = newModelType;
-    return true;
+	obj.modelType = newModelType;
+	GNavigation.MarkGridDirty();
+	return true;
 }
 
 bool GlobalWorld::SetModelhp(uint64 objectId, uint64 newModelType)
@@ -266,7 +272,7 @@ bool GlobalWorld::PlayerDespawn(uint64 id)
     WRITE_LOCK;
     bool removed = false;
 
-    for (auto it = _objects.begin(); it != _objects.end(); )
+	for (auto it = _objects.begin(); it != _objects.end(); )
     {
         if (it->second.ownerPlayerId == id)
         {
@@ -278,8 +284,10 @@ bool GlobalWorld::PlayerDespawn(uint64 id)
         {
             ++it;
         }
-    }
-    return removed;
+	}
+	if (removed)
+		GNavigation.MarkGridDirty();
+	return removed;
 }
  bool GlobalWorld::Despawn(ObjectId objectId)
  {
@@ -321,8 +329,10 @@ bool GlobalWorld::PlayerDespawn(uint64 id)
         << " alive=" << it->second.alive
         << '\n';
 
-    size_t erased = _objects.erase(objectId);
-    DeleteWorldObjectFromDB(objectId);
+	size_t erased = _objects.erase(objectId);
+	DeleteWorldObjectFromDB(objectId);
+	if (erased > 0)
+		GNavigation.MarkGridDirty();
 
     std::cout << "[REMOVE] erased=" << erased
         << " id=" << objectId
@@ -572,8 +582,11 @@ void GlobalWorld::ParseMultiModelBlock(ifstream& InFile, const char* endTag, Pac
         o->set_model_type(it.modelType);
         o->set_temp_id(it.id);
     }
-    auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
-    session->Send(sendBuffer);
+    if (session)
+    {
+        auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
+        session->Send(sendBuffer);
+    }
 }
 void GlobalWorld::ParseSingleModelBlock(ifstream& InFile, const char* endTag, PacketSessionRef& session)
 {
@@ -704,9 +717,6 @@ void GlobalWorld::ParseSingleModelBlock(ifstream& InFile, const char* endTag, Pa
 //}
 void GlobalWorld::ReadTextFile(char* pstrFileName, PacketSessionRef& session)
 {
-    if (!_initialized)
-    {
-        _initialized = true;
         ifstream readFile(pstrFileName);
         if (!readFile.is_open())
         {
@@ -769,7 +779,31 @@ void GlobalWorld::ReadTextFile(char* pstrFileName, PacketSessionRef& session)
         }
 
         readFile.close();
+}
+
+bool GlobalWorld::LoadInitialWorld()
+{
+    if (_initialized)
+        return true;
+
+    if (!IsWorldObjectTableEmpty())
+    {
+        cout << "[WorldInit] DB exists -> load from DB" << endl;
+        _initialized = LoadFromDB();
+        return _initialized;
     }
+
+    cout << "[WorldInit] DB empty -> load all stage files" << endl;
+    PacketSessionRef noSession;
+
+    ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage01.txt"), noSession);
+    ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage02.txt"), noSession);
+    ReadTextFile(const_cast<char*>("..\\Model\\Spawn\\Stage03.txt"), noSession);
+
+    _initialized = !_objects.empty();
+    GNavigation.MarkGridDirty();
+    cout << "[WorldInit] loaded from stage files. count=" << _objects.size() << endl;
+    return _initialized;
 }
 bool GlobalWorld::ApplySeedGrowthRule(uint64 objectId, bool hasCeiling)
 {
@@ -841,8 +875,9 @@ bool GlobalWorld::LoadFromDB()
             maxId = obj.id;
     }
 
-    _idGen.store(maxId + 1);
+	_idGen.store(maxId + 1);
+	GNavigation.MarkGridDirty();
 
-    cout << "[GlobalWorld] loaded from DB. count=" << _objects.size() << endl;
+	cout << "[GlobalWorld] loaded from DB. count=" << _objects.size() << endl;
     return true;
 }

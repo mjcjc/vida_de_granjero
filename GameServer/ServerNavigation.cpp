@@ -65,6 +65,71 @@ bool ServerNavigation::IsInsideWorld(float x, float z) const
 	return x >= PlayMin && x <= PlayMax && z >= PlayMin && z <= PlayMax;
 }
 
+void ServerNavigation::MarkGridDirty()
+{
+	std::lock_guard<std::mutex> guard(_gridMutex);
+	_gridDirty = true;
+}
+
+void ServerNavigation::UpdateWalkableGrid(const std::vector<NavigationObstacle>& obstacles)
+{
+	std::lock_guard<std::mutex> guard(_gridMutex);
+	if (!_gridDirty)
+		return;
+
+	_walkableGrid.assign(static_cast<size_t>(GridWidth) * GridHeight, 1);
+	for (const NavigationObstacle& obstacle : obstacles)
+	{
+		const float cellHalf = CellSize * 0.5f;
+		const float minX = obstacle.minX - PlayerRadius - cellHalf;
+		const float maxX = obstacle.maxX + PlayerRadius + cellHalf;
+		const float minZ = obstacle.minZ - PlayerRadius - cellHalf;
+		const float maxZ = obstacle.maxZ + PlayerRadius + cellHalf;
+
+		for (int32 gridZ = 0; gridZ < GridHeight; ++gridZ)
+		{
+			const float worldZ = PlayMin + (static_cast<float>(gridZ) + 0.5f) * CellSize;
+			if (worldZ < minZ || worldZ > maxZ)
+				continue;
+
+			for (int32 gridX = 0; gridX < GridWidth; ++gridX)
+			{
+				const float worldX = PlayMin + (static_cast<float>(gridX) + 0.5f) * CellSize;
+				if (worldX >= minX && worldX <= maxX)
+					_walkableGrid[static_cast<size_t>(gridZ) * GridWidth + gridX] = 0;
+			}
+		}
+	}
+
+	_gridDirty = false;
+	std::cout << "[NAVIGATION] Walkable grid rebuilt. obstacles=" << obstacles.size()
+		<< " cells=" << _walkableGrid.size() << std::endl;
+}
+
+bool ServerNavigation::WorldToGrid(float x, float z, int32& gridX, int32& gridZ) const
+{
+	if (!IsInsideWorld(x, z))
+		return false;
+
+	gridX = static_cast<int32>((x - PlayMin) / CellSize);
+	gridZ = static_cast<int32>((z - PlayMin) / CellSize);
+	gridX = std::clamp(gridX, 0, GridWidth - 1);
+	gridZ = std::clamp(gridZ, 0, GridHeight - 1);
+	return true;
+}
+
+bool ServerNavigation::IsWalkable(float x, float z) const
+{
+	int32 gridX = 0;
+	int32 gridZ = 0;
+	if (!WorldToGrid(x, z, gridX, gridZ))
+		return false;
+	if (_walkableGrid.empty())
+		return true;
+
+	return _walkableGrid[static_cast<size_t>(gridZ) * GridWidth + gridX] != 0;
+}
+
 float ServerNavigation::GetTerrainHeight(float worldX, float worldZ) const
 {
 	if (_heightMap.empty())
@@ -114,7 +179,9 @@ bool ServerNavigation::IsPathBlocked(const ServerPosition& from, const ServerPos
 	for (int32 i = 1; i <= sampleCount; ++i)
 	{
 		const float ratio = static_cast<float>(i) / sampleCount;
-		if (IsBlocked(from.x + dx * ratio, from.z + dz * ratio, obstacles))
+		const float sampleX = from.x + dx * ratio;
+		const float sampleZ = from.z + dz * ratio;
+		if (!IsWalkable(sampleX, sampleZ) || IsBlocked(sampleX, sampleZ, obstacles))
 			return true;
 	}
 	return false;
@@ -146,8 +213,9 @@ ServerPosition ServerNavigation::ResolveCollision(const ServerPosition& current,
 
 MoveValidationResult ServerNavigation::ValidateMove(const ServerPosition& current,
 	const ServerPosition& requested, float elapsedSeconds,
-	const std::vector<NavigationObstacle>& obstacles) const
+	const std::vector<NavigationObstacle>& dynamicObstacles) const
 {
+	std::lock_guard<std::mutex> guard(_gridMutex);
 	MoveValidationResult result;
 	result.position = current;
 	if (!IsFinite(requested))
@@ -163,7 +231,7 @@ MoveValidationResult ServerNavigation::ValidateMove(const ServerPosition& curren
 		return result;
 	}
 
-	elapsedSeconds = std::clamp(elapsedSeconds, 0.001f, 0.25f);
+	elapsedSeconds = std::clamp(elapsedSeconds, 0.001f, 0.5f);
 	const float dx = requested.x - current.x;
 	const float dz = requested.z - current.z;
 	const float distance = std::sqrt(dx * dx + dz * dz);
@@ -185,7 +253,7 @@ MoveValidationResult ServerNavigation::ValidateMove(const ServerPosition& curren
 	}
 
 	bool collided = false;
-	result.position = ResolveCollision(current, adjusted, obstacles, collided);
+	result.position = ResolveCollision(current, adjusted, dynamicObstacles, collided);
 	if (collided)
 	{
 		result.corrected = true;

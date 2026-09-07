@@ -1,10 +1,10 @@
-#include "ClientNetwork.h"
+ï»¿#include "ClientNetwork.h"
 
 
 bool ClientNetwork::Start(const wchar_t* ip, uint16 port)
 {
     ServerPacketHandler::Init();
-    this_thread::sleep_for(1s);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     _service = MakeShared<ClientService>(
         NetAddress(ip, port),
@@ -17,9 +17,9 @@ bool ClientNetwork::Start(const wchar_t* ip, uint16 port)
         },
         1);
 
-    if (_service->Start() == false)   // ¿©±â¼­ ½ÇÁ¦ ¿¬°á ½Ãµµ
+    if (_service->Start() == false)   // ì—¬ê¸°ì„œ ì‹¤ì œ ì—°ê²° ì‹œë„
     {
-        std::wcout << L"[ClientNetwork] ClientService::Start() ½ÇÆĞ\n";
+        std::wcout << L"[ClientNetwork] ClientService::Start() ì‹¤íŒ¨\n";
         _service.reset();
         _connected = false;
         return false;
@@ -27,7 +27,7 @@ bool ClientNetwork::Start(const wchar_t* ip, uint16 port)
 
     _connected = true;
 
-    // IOCP µğ½ºÆĞÄ¡ ½º·¹µå
+    // IOCP ë””ìŠ¤íŒ¨ì¹˜ ìŠ¤ë ˆë“œ
     GThreadManager->Launch([service = _service]()
         {
             while (true)
@@ -41,7 +41,7 @@ bool ClientNetwork::Start(const wchar_t* ip, uint16 port)
 
 void ClientNetwork::Broadcast(SendBufferRef sendBuffer)
 {
-    auto service = _service;     // refcount Áõ°¡·Î ¼ö¸í °íÁ¤
+    auto service = _service;     // refcount ì¦ê°€ë¡œ ìˆ˜ëª… ê³ ì •
     if (!service) return;
     service->Broadcast(sendBuffer);
 }

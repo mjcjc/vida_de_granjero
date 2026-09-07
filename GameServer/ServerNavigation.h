@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -42,8 +43,10 @@ class ServerNavigation
 public:
 	bool Init();
 	bool IsReady() const { return !_heightMap.empty(); }
+	void MarkGridDirty();
+	void UpdateWalkableGrid(const std::vector<NavigationObstacle>& obstacles);
 	MoveValidationResult ValidateMove(const ServerPosition& current, const ServerPosition& requested,
-		float elapsedSeconds, const std::vector<NavigationObstacle>& obstacles) const;
+		float elapsedSeconds, const std::vector<NavigationObstacle>& dynamicObstacles) const;
 	float GetTerrainHeight(float worldX, float worldZ) const;
 	static constexpr float GetPlayerRadius() { return PlayerRadius; }
 
@@ -51,6 +54,8 @@ private:
 	bool LoadHeightMap(const std::string& path);
 	bool IsFinite(const ServerPosition& position) const;
 	bool IsInsideWorld(float x, float z) const;
+	bool WorldToGrid(float x, float z, int32& gridX, int32& gridZ) const;
+	bool IsWalkable(float x, float z) const;
 	bool IsBlocked(float x, float z, const std::vector<NavigationObstacle>& obstacles) const;
 	bool IsPathBlocked(const ServerPosition& from, const ServerPosition& to,
 		const std::vector<NavigationObstacle>& obstacles) const;
@@ -70,8 +75,14 @@ private:
 	static constexpr float PlayerRadius = 0.65f;
 	static constexpr float MaximumMoveSpeed = 6.0f;
 	static constexpr float NetworkTolerance = 0.75f;
+	static constexpr float CellSize = 0.5f;
+	static constexpr int32 GridWidth = static_cast<int32>((PlayMax - PlayMin) / CellSize);
+	static constexpr int32 GridHeight = static_cast<int32>((PlayMax - PlayMin) / CellSize);
 
 	std::vector<uint8_t> _heightMap;
+	std::vector<uint8_t> _walkableGrid;
+	bool _gridDirty = true;
+	mutable std::mutex _gridMutex;
 };
 
 extern ServerNavigation GNavigation;

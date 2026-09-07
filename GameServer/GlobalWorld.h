@@ -31,10 +31,11 @@ public:
     ObjectId Spawn(uint64 tempid,uint32 modelType, uint32 hp,float x, float y, float z, float qx, float qy, float qz, float qw, uint64 ownerPlayerId);
     std::vector<WorldObject> Snapshot() const;
     std::vector<NavigationObstacle> GetNavigationObstacles() const;
+    bool LoadInitialWorld();
 
     void SendSnapshotTo(PacketSessionRef& session);
     int GetInitialized() const { return _initialized; }
-    bool MarkInitialized(bool _initialized) {  return _initialized; }
+    void MarkInitialized(bool initialized) { _initialized = initialized; }
     bool Despawn(ObjectId objectId);
     bool PlayerDespawn(uint64 objectId);
     bool ApplySeedGrowthRule(uint64 objectId, bool hasCeiling);

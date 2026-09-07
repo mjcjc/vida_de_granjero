@@ -1,4 +1,4 @@
-#include"pch.h"
+ï»¿#include"pch.h"
 #include "WorldEnviroment.h"
 #include "Protocol.pb.h"      // S_WORLD_STATE
 #include "GameSession.h"      // Send()
@@ -91,18 +91,34 @@ void WorldEnvironment::ChangeSeason(ESeason season)
     BroadcastWorldState();
 }
 
-void WorldEnvironment::AddMissionScore(uint32_t score)
+bool WorldEnvironment::ChangeWorldState(ESeason season, EWeather weather)
 {
-    _missionScore += (int32_t)score;
+    if (season < ESeason::Spring || season > ESeason::Winter ||
+        weather < EWeather::Clear || weather > EWeather::Fog)
+    {
+        return false;
+    }
+
+    _season = season;
+    _weather = weather;
+    BroadcastWorldState();
+    return true;
+}
+
+void WorldEnvironment::AddMissionScore(int32_t scoreDelta)
+{
+    if (scoreDelta <= 0)
+        return;
+
+    _missionScore += scoreDelta;
 
     while (_missionScore >= 100)
     {
         _missionScore -= 100;
 
-        ESeason next = (ESeason)(((int)_season + 1) % 4);
-        _season = next;
+        _season = static_cast<ESeason>((static_cast<int>(_season) + 1) % 4);
 
-        // ½ÃÁğ ¹Ù²î¸é ±× ½ÃÁğ¿¡ ¸Â´Â ³¯¾¾ ´Ù½Ã »Ì±â
+        // ì‹œì¦Œ ë°”ë€Œë©´ ê·¸ ì‹œì¦Œì— ë§ëŠ” ë‚ ì”¨ ë‹¤ì‹œ ë½‘ê¸°
         _weather = PickWeatherBySeason(_season);
     }
     BroadcastWorldState();
@@ -160,7 +176,7 @@ void WorldEnvironment::BroadcastWorldState()
     pkt.set_season((int32_t)_season);
     pkt.set_weather((int32_t)_weather);
     pkt.set_mission_score(_missionScore);
-	cout << "¿ùµå »óÅÂ ºê·ÎµåÄ³½ºÆ® ½ÃÁğ" << pkt.season() << "³¯¾¾" << pkt.weather() << "¹Ì¼ÇÁ¡¼ö" << pkt.mission_score() << endl;
+	cout << "ì›”ë“œ ìƒíƒœ ë¸Œë¡œë“œìºìŠ¤íŠ¸ ì‹œì¦Œ" << pkt.season() << "ë‚ ì”¨" << pkt.weather() << "ë¯¸ì…˜ì ìˆ˜" << pkt.mission_score() << endl;
 
 	auto sendBuffer = ClientPacketHandler::MakeSendBuffer(pkt);
 
@@ -185,7 +201,7 @@ bool WorldEnvironment::IsMissionScoreReached(int32_t requiredScore) const
 
 //void WorldEnvironment::weatherTick(uint64 nowMs)
 //{
-//    // 1) ÀÌº¥Æ® ³¯¾¾°¡ ³¡³µÀ¸¸é Clear·Î
+//    // 1) ì´ë²¤íŠ¸ ë‚ ì”¨ê°€ ëë‚¬ìœ¼ë©´ Clearë¡œ
 //    if (_weather != EWeather::Clear)
 //    {
 //        if (nowMs >= _weatherUntilMs)
@@ -197,12 +213,12 @@ bool WorldEnvironment::IsMissionScoreReached(int32_t requiredScore) const
 //        return;
 //    }
 //
-//    // 2) Clear »óÅÂÀÏ ¶§¸¸ ³¯¾¾ ÀÌº¥Æ® ½Ãµµ
-//    // (¿¹: 10ÃÊ¿¡ ÇÑ ¹ø¸¸ Ã¼Å©)
+//    // 2) Clear ìƒíƒœì¼ ë•Œë§Œ ë‚ ì”¨ ì´ë²¤íŠ¸ ì‹œë„
+//    // (ì˜ˆ: 10ì´ˆì— í•œ ë²ˆë§Œ ì²´í¬)
 //    if (nowMs < _nextWeatherCheckMs)
 //        return;
 //
-//    _nextWeatherCheckMs = nowMs + 10 * 1000; // 10ÃÊ ÁÖ±â
+//    _nextWeatherCheckMs = nowMs + 10 * 1000; // 10ì´ˆ ì£¼ê¸°
 //
 //    EWeather next = PickWeatherBySeason(_season);
 //
@@ -210,8 +226,8 @@ bool WorldEnvironment::IsMissionScoreReached(int32_t requiredScore) const
 //    {
 //        _weather = next;
 //
-//        // Áö¼Ó ½Ã°£Àº PPT ±âÁØÀ¸·Î ¼³Á¤
-//        // ¿¹: 30~90ÃÊ
+//        // ì§€ì† ì‹œê°„ì€ PPT ê¸°ì¤€ìœ¼ë¡œ ì„¤ì •
+//        // ì˜ˆ: 30~90ì´ˆ
 //        int durationSec = 30 + (rand() % 60);
 //        _weatherUntilMs = nowMs + durationSec * 1000ULL;
 //

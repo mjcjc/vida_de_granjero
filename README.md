@@ -1,103 +1,57 @@
-# Vida de Granjero | C++ 멀티플레이 농장 게임
+# Vida de Granjero | 멀티플레이 농장 게임의 서버 콘텐츠 처리
 
-**DirectX 12 게임 클라이언트와 IOCP 게임 서버를 연결하고, 이동·월드 상태·계정 정보를 서버와 동기화하는 졸업작품 기반 프로젝트입니다.** 이 저장소에서는 졸업작품을 가져온 뒤 서버 권위 이동, 클라이언트 이동 보정·보간, DB 로그인 기능을 추가·수정했습니다.
+졸업작품의 서버 측 이동 처리, 월드 상태 전달, 계정·세션 관리를 정리하기 위한 검토 초안입니다. **클라이언트는 본인이 수정하지 않았으므로 개인 작업 소개에서 제외합니다.**
 
-| 눈여겨볼 기술 경험 | 현재 코드에 구현된 내용 |
-|---|---|
-| **이동 요청을 서버에서 검증** | 이동 순번, 입력 방향, 시간 간격을 처리하고 지형·경계·충돌 기준으로 위치 검증 |
-| **내 캐릭터와 다른 플레이어의 이동 처리 분리** | 서버 응답으로 로컬 위치 보정, 원격 플레이어는 스냅샷 보간·외삽 |
-| **새로 접속한 클라이언트에 월드 상태 전달** | 월드 오브젝트 스냅샷과 환경 상태 전송, 씬 준비 전 초기화 패킷 보관 |
-| **DB 계정과 접속 세션 연결** | 계정 조회·자동 생성, 비밀번호 비교, 동일 계정의 중복 접속 거부 |
+이전 초안에서 대표 경험으로 선정한 원격 플레이어 보간·외삽·회전 보간은 클라이언트 코드였습니다. 해당 내용을 본인의 구현 성과로 내세우지 않습니다. 서버 코드의 존재와 본인의 기여도도 별도로 확인해야 하므로, 아래는 담당 범위를 확인할 후보와 그 코드 근거입니다.
 
-> 아래 내용은 코드와 커밋으로 확인한 구현입니다. 이번 README 작성 과정에서는 빌드·게임 실행·성능 측정을 하지 않았으며, 동작 검증 완료나 성능 개선 수치를 주장하지 않습니다.
+## 대표 주제 후보: 이동 요청을 검증하고 결과를 공유하는 서버 처리
 
-## 클라이언트 입력에서 서버 판단, 화면 반영까지
+**콘텐츠 관점:** 여러 플레이어의 이동 요청을 받아 게임 월드의 지형·장애물 조건에 따라 위치를 판단하고, 처리 결과를 접속 세션에 전송하는 경로입니다.
 
 ```text
-DirectX 12 클라이언트
-  ├─ 로그인 요청 ────────────────> GameServer ──> MySQL
-  ├─ 이동 입력·순번·시간 ────────> 서버의 위치 계산·이동 검증
-  └─ 서버 응답 수신
-       ├─ 내 플레이어: 서버 위치를 기준으로 보정
-       ├─ 다른 플레이어: 수신 스냅샷을 보간해 화면에 반영
-       └─ 월드: 오브젝트 초기 상태·환경 상태 반영
-
-GameServer: IOCP dispatch worker 5개 + 작물 성장 갱신 스레드
+이동 요청 수신
+  → 순번 검사
+  → 입력 방향·시간 간격 처리
+  → 이동 후보 위치 계산
+  → 지형·경계·장애물 기반 검증
+  → 서버의 플레이어 상태 갱신
+  → 처리 결과와 마지막 처리 순번 전송
 ```
 
-별도 채팅 서버 프로젝트인 `mjcjc/ServerCore`와 달리, 이 저장소의 `ServerCore/`는 게임 서버와 클라이언트에서 사용하는 네트워크 기반 코드입니다. 이 게임을 MasterServer·WorldServer 기반 멀티 프로세스 클러스터로 소개하지 않습니다.
+### 설명을 작성한 코드 근거
 
-## 1. 위치를 전달하는 데서 이동을 검증하는 구조로
+분석 기준은 본인 저장소 `mjcjc/vida_de_granjero`의 `0f22a28` 버전입니다. 아래 내용은 실행으로 검증한 성과가 아니라 코드에서 확인한 처리입니다.
 
-**서버 권위 이동과 클라이언트의 화면 처리를 함께 수정한 경험입니다.** 이동 패킷에 입력 방향·시간·순번을 두고, 서버 응답에는 마지막 처리 순번을 포함해 로컬 보정에 전달합니다.
+| 서버 처리 | 확인한 사실 | 코드 근거 |
+|---|---|---|
+| 요청 순번 검사 | 순번이 0이거나 마지막 처리 순번 이하이면 무시 | [ClientPacketHandler.cpp 164행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L164-L172) |
+| 방향 입력 처리 | 유한값을 검사하고 길이가 1보다 큰 입력을 정규화 | [ClientPacketHandler.cpp 180행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L180-L195) |
+| 이동 후보 계산 | 클라이언트·서버 시간 간격을 제한하고 현재 위치와 직전 저장 입력으로 수평 위치 계산 | [ClientPacketHandler.cpp 196행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L196-L202) |
+| 충돌 조건 수집 | 월드 장애물과 다른 플레이어의 영역을 모아 `ValidateMove` 호출 | [ClientPacketHandler.cpp 203행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L203-L221) |
+| 서버 상태 갱신 | 검증 결과 위치와 처리 순번·현재 입력 저장 | [ClientPacketHandler.cpp 237행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L237-L244) |
+| 이동 결과 공유 | `S_MOVE`에 마지막 처리 순번·서버 tick 등을 넣어 Broadcast | [ClientPacketHandler.cpp 246행](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L246-L258) |
 
-### 서버의 판단
+검증 기준의 구현은 [ServerNavigation.cpp](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ServerNavigation.cpp)에 있습니다. 이 경로를 근거로 서버 이동 처리를 설명할 수 있지만, 부정행위 방지 완성이나 이동 오차 감소를 검증한 것으로 표현하지 않습니다.
 
-[Handle_C_MOVE](GameServer/ClientPacketHandler.cpp)는 다음 순서로 요청을 처리합니다.
+### 이 주제를 후보로 고른 이유
 
-- 0이거나 이미 처리한 이동 순번은 무시합니다.
-- 입력 방향의 유한값 여부를 확인하고, 길이가 1보다 크면 정규화합니다.
-- 클라이언트 시간과 서버에서 관찰한 시간 간격을 제한해 시뮬레이션 시간을 구합니다.
-- 현재 위치와 저장된 직전 입력으로 수평 이동 후보를 계산합니다.
-- 월드 오브젝트와 다른 플레이어의 장애물 정보를 모아 이동을 검증하고, 결과 위치와 처리 순번을 저장합니다.
+서버 기술 이름을 나열하는 대신, 플레이어의 행동 하나가 어떤 검사와 상태 변경을 거쳐 다른 접속자에게 전달되는지 설명할 수 있습니다. 다만 이동 처리 중 어느 부분을 본인이 수정했는지 확인한 뒤 대표 경험으로 확정해야 합니다. 클라이언트에서 움직임을 부드럽게 표시하는 보간은 이 작업과 구분합니다.
 
-[ServerNavigation](GameServer/ServerNavigation.cpp)은 높이맵과 보행 가능 그리드, 월드 경계·속도·충돌 검증을 담당합니다. 보정 시 서버에 `[MOVE_CORRECTION]` 로그를 출력하는 경로도 있습니다.
+## 보조 주제 후보
 
-### 클라이언트의 화면 처리
+| 후보 | 서버에서 확인한 구현 | 근거 |
+|---|---|---|
+| 입장 시 월드 상태 전달 | 오브젝트 스냅샷과 현재 환경 상태 전송 | [입장 처리](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/ClientPacketHandler.cpp#L72), [스냅샷](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/GlobalWorld.cpp#L152) |
+| 계정과 접속 세션 연결 | DB 인증 후 동일 계정의 접속 여부 검사, 세션 종료 시 연결 해제 | [AccountDB.cpp](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/AccountDB.cpp), [GameSessionManager.cpp](https://github.com/mjcjc/vida_de_granjero/blob/0f22a28/GameServer/GameSessionManager.cpp) |
 
-[수신 처리](NewClient/ServerPacketHandler.cpp)에서 내 플레이어의 이동 응답은 `ReconcileLocalPlayer`로, 다른 플레이어의 응답은 스냅샷 큐로 전달합니다. [MainScene](MainScene.cpp)의 원격 이동 처리는 도착 시각 기준 100ms 지연을 두어 보간하고, 다음 스냅샷이 없을 때 최대 0.5초까지 외삽하는 코드입니다. 이 값들은 현재 설정이며 최적화 측정 결과는 아닙니다.
+위 기능도 개인 담당으로 확정하지 않았습니다. 계정 구현은 비밀번호 평문 저장·비교가 있으므로 보안이 완성된 인증 시스템으로 소개하지 않습니다.
 
-**확인한 변경:** [e0eecdd — 서버 권위 이동 구조](https://github.com/mjcjc/vida_de_granjero/commit/e0eecdd), [0f22a28 — 이동·월드 동기화 개선](https://github.com/mjcjc/vida_de_granjero/commit/0f22a28).
+## 초안 확정에 필요한 확인
 
-**현재 범위:** 모든 클라이언트 입력 검증이나 부정행위 방지가 완성됐다는 의미는 아닙니다. 위치 보정 오차와 지연 조건별 동작은 실행 자료로 확인해야 합니다.
+- 위 서버 코드 중 직접 작업하거나 GPT와 함께 수정한 부분은 어디인가?
+- 당시 해결하려던 현상과 선택 이유를 기억하거나 기록으로 확인할 수 있는가?
+- 어떤 실행으로 결과를 확인했으며, 해당 화면·로그가 남아 있는가?
 
-## 2. 씬이 준비되기 전에 도착한 월드 초기 상태 보관
+담당 범위가 확인되면 그 부분만 본인 경험 문장으로 바꿉니다. 현재는 코드 분석 근거만 확보한 상태이며, 실행 검증이나 개인 기여를 확정하지 않았습니다.
 
-서버의 [GlobalWorld](GameServer/GlobalWorld.cpp)는 월드 오브젝트의 위치·회전·모델·식별자를 `S_WORLD_INIT` 스냅샷으로 전송합니다. 입장 처리에서는 현재 환경 상태도 함께 전달합니다.
-
-클라이언트의 [Handle_S_WORLD_INIT](NewClient/ServerPacketHandler.cpp)은 메인 씬이 준비되지 않았을 때 패킷을 `g_pendingWorldInits`에 보관합니다. [ApplyPendingWorldInit](MainScene.cpp)은 보관된 마지막 초기화 패킷으로 스폰 데이터를 구성하고 오브젝트를 생성한 뒤 대기 목록을 비웁니다.
-
-```text
-월드 초기 상태 수신
-  ├─ 씬 준비됨 → 초기 상태 반영
-  └─ 씬 준비 전 → 대기 목록에 보관 → 준비 후 마지막 초기 상태 적용
-```
-
-씬 수명주기와 네트워크 수신 시점을 연결한 구현입니다. 모든 패킷 종류에 대해 준비 상태 처리가 통일되어 있다는 뜻은 아니며, 과거 패킷 유실을 실제로 재현·해결했다는 실행 증거는 아직 제시하지 않습니다.
-
-관련 코드: [GlobalWorld.cpp](GameServer/GlobalWorld.cpp), [WorldEnviroment.cpp](GameServer/WorldEnviroment.cpp), [MainScene.cpp](MainScene.cpp).
-
-## 3. DB 계정 인증과 중복 접속 차단 연결
-
-로그인 요청은 [AccountDB](GameServer/AccountDB.cpp)에서 계정을 조회하고, 없는 계정은 생성합니다. 기존 계정은 비밀번호를 비교하고 로그인 시각을 갱신합니다. SQL 값 전달에는 PreparedStatement를 사용합니다.
-
-인증 후 [TryBindAccount](GameServer/GameSessionManager.cpp)가 계정 DB ID와 세션을 연결합니다. 이미 접속 중인 계정이면 로그인을 거부하고, 세션 제거 시 해당 연결을 해제합니다. 클라이언트에는 로그인 성공 시 메인 씬으로 전환하는 코드가 있습니다.
-
-**확인한 변경:** [84d2676 — DB 로그인·중복 접속 차단](https://github.com/mjcjc/vida_de_granjero/commit/84d2676), [f04659c — 로그인 후 씬 전환](https://github.com/mjcjc/vida_de_granjero/commit/f04659c), [b34a77d — Protobuf 버전·로그인 문자열 수정](https://github.com/mjcjc/vida_de_granjero/commit/b34a77d).
-
-**현재 제한:** 컬럼 이름은 `password_hash`이지만 현재 구현은 비밀번호를 평문으로 저장·비교합니다. DB 접속 설정도 코드에 있으므로, 보안이 완성된 인증 시스템이나 배포 준비가 끝난 서비스로 표현하지 않습니다.
-
-## 코드 구성과 개발 환경
-
-| 위치 | 내용 |
-|---|---|
-| 루트의 클라이언트 코드 | DirectX 12 렌더링, 씬, 플레이어, 모델·지형·셰이더 처리 |
-| `NewClient/` | 서버 연결과 수신 패킷 처리 |
-| `GameServer/` | 세션, 이동 검증, 월드·환경·성장, DB 연동 |
-| `ServerCore/` | IOCP, 세션·서비스, 스레드·버퍼 등 네트워크 기반 코드 |
-| `Common/Protobuf/bin/` | 공유 패킷 스키마와 생성 도구 |
-| `DataBase/` | DB 관련 코드 |
-
-Windows C++ / Visual Studio 프로젝트이며, 클라이언트·GameServer·ServerCore가 포함된 `vida_de_granjero.sln`이 있습니다. DirectX 12, Protobuf, MySQL Connector/C++ 의존성과 모델·이미지·높이맵 경로를 맞춰야 합니다. 현재 설정의 서버 주소는 `127.0.0.1:7777`이며, 이것만으로 누구나 즉시 빌드·실행할 수 있음을 확인한 상태는 아닙니다.
-
-## 졸업작품 기반 작업과 기여 표기
-
-이 저장소에는 [34e71a7 — 졸업작품 가져오기](https://github.com/mjcjc/vida_de_granjero/commit/34e71a7) 이후의 변경 이력이 있습니다. README는 그 기반 위에 남아 있는 이동·동기화·로그인 변경을 중심으로 정리했습니다. 졸업작품 전체 코드·모델·그래픽 자산을 모두 개인이 독자 제작한 것으로 주장하지 않습니다.
-
-졸업작품 이후의 GPT 활용 작업 맥락을 바탕으로 정리했으며, 세부 코드별 직접 작성·AI 생성 범위와 팀원별 담당 범위는 현재 자료만으로 확정하지 않았습니다. 커밋 작성자만으로 기여도를 단정하지 않습니다.
-
-## 현재 제시하는 증거의 범위
-
-- **확인한 것:** 위 기능의 코드 경로와 본인 저장소의 변경 커밋.
-- **아직 첨부하지 않은 것:** 이 게임의 실제 동작 사진·영상, 재현 가능한 테스트 로그, 이동 오차·성능 측정 결과.
-- **다른 프로젝트와 구분:** 별도 ServerCore 프로젝트의 SendQueue 27개 PASS와 3클라이언트 채팅 결과를 이 졸업작품의 검증 자료로 사용하지 않습니다.
+이 문서는 서버 코드 분석을 바탕으로 한 검토 초안입니다. 개인 담당 범위와 실행 증거는 확인 후 보완합니다.
